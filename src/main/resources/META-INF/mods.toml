@@ -1,0 +1,31 @@
+modLoader="javafml"
+loaderVersion="[36,)"
+license="§7§lThe §4§lMIT §7§lLicence§r (MIT)"
+#issueTrackerURL="https://example.com/"
+
+[[mods]]
+modId = "cubicthings"
+version = "0.1.0"
+displayName = "§bCubic Things"
+#updateJSONURL="https://example.com/"
+#displayURL="https://example.com/"
+logoFile="modbanner.png"
+credits="Forge, and the Modding Community!"
+authors = "Cubicpath"
+description = '''
+    Random assortment of useful things made by Cubicpath.
+    '''
+
+[[dependencies.cubicthings]]
+modId = "forge"
+mandatory = true
+versionRange = "[36,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.cubicthings]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.16.5,1.17)"
+ordering = "NONE"
+side = "BOTH"
