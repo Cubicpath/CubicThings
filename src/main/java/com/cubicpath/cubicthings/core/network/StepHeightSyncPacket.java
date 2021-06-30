@@ -24,7 +24,7 @@ public class StepHeightSyncPacket {
 
     /** External packet creation. Null sets data to default {@linkplain ClientPlayerEntity#stepHeight} (0.6F) .*/
     public StepHeightSyncPacket(@Nullable Float data) {
-        this.data = data != null ? data : 0.6F;
+        this.data = data != null ? data : 1.0F;
     }
 
     /** Called by {@link ModPacketHandler} to decode data on receiving side. */
