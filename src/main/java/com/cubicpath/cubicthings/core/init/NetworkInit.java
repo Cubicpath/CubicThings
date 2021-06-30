@@ -6,6 +6,9 @@ package com.cubicpath.cubicthings.core.init;
 
 import com.cubicpath.cubicthings.CubicThings;
 import com.cubicpath.cubicthings.core.network.ModPacketHandler;
+import com.cubicpath.cubicthings.core.network.StepHeightSyncPacket;
+
+import java.util.Optional;
 
 public final class NetworkInit {
     private NetworkInit(){
@@ -15,6 +18,9 @@ public final class NetworkInit {
     public static final ModPacketHandler PACKET_HANDLER = new ModPacketHandler(CubicThings.MODID, "main", "1");
 
     public static void registerPackets() {
+        PACKET_HANDLER.channel.registerMessage(PACKET_HANDLER.packetIndex++,
+                StepHeightSyncPacket.class, StepHeightSyncPacket::encode, StepHeightSyncPacket::decode,StepHeightSyncPacket::handle,
+                Optional.of(StepHeightSyncPacket.getDirection()));
 
     }
 

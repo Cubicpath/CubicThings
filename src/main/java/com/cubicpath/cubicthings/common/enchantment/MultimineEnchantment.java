@@ -9,6 +9,7 @@ import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.inventory.EquipmentSlotType;
 
 public class MultimineEnchantment extends Enchantment {
+
     public MultimineEnchantment(Rarity rarityIn, EquipmentSlotType[] slots) {
         super(rarityIn, EnchantmentType.DIGGER, slots);
     }

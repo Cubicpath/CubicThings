@@ -9,6 +9,8 @@ import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.inventory.EquipmentSlotType;
 
 public class MultistepEnchantment extends Enchantment {
+    public static final float STEP_FACTOR = 0.5f;
+
     public MultistepEnchantment(Rarity rarityIn, EquipmentSlotType[] slots) {
         super(rarityIn, EnchantmentType.ARMOR, slots);
     }
