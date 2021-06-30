@@ -1,14 +1,14 @@
 modLoader="javafml"
 loaderVersion="[36,)"
 license="§7§lThe §4§lMIT §7§lLicence§r (MIT)"
-#issueTrackerURL="https://example.com/"
+issueTrackerURL="https://github.com/Cubicpath/CubicTools/issues"
 
 [[mods]]
 modId = "cubicthings"
 version = "0.1.0"
 displayName = "§bCubic Things"
-#updateJSONURL="https://example.com/"
-#displayURL="https://example.com/"
+updateJSONURL="https://gist.githubusercontent.com/Cubicpath/7549c5e1d4c97f4d82a3dc233f0f95d6/raw"
+displayURL="https://github.com/Cubicpath/CubicTools"
 logoFile="modbanner.png"
 credits="Forge, and the Modding Community!"
 authors = "Cubicpath"
