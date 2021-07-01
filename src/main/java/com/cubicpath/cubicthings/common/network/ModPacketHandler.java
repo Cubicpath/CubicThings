@@ -2,7 +2,7 @@
 //                    MIT Licence (C) 2021 Cubicpath@Github                    /
 ////////////////////////////////////////////////////////////////////////////////
 
-package com.cubicpath.cubicthings.core.network;
+package com.cubicpath.cubicthings.common.network;
 
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.network.NetworkRegistry;

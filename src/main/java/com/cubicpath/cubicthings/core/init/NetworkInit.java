@@ -5,8 +5,8 @@
 package com.cubicpath.cubicthings.core.init;
 
 import com.cubicpath.cubicthings.CubicThings;
-import com.cubicpath.cubicthings.core.network.ModPacketHandler;
-import com.cubicpath.cubicthings.core.network.StepHeightSyncPacket;
+import com.cubicpath.cubicthings.common.network.ModPacketHandler;
+import com.cubicpath.cubicthings.common.network.StepHeightSyncPacket;
 
 import java.util.Optional;
 

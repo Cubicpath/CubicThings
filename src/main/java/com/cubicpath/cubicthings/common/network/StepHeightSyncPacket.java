@@ -2,7 +2,7 @@
 //                    MIT Licence (C) 2021 Cubicpath@Github                    /
 ////////////////////////////////////////////////////////////////////////////////
 
-package com.cubicpath.cubicthings.core.network;
+package com.cubicpath.cubicthings.common.network;
 
 import com.cubicpath.cubicthings.CubicThings;
 import net.minecraft.client.Minecraft;
@@ -18,7 +18,6 @@ public class StepHeightSyncPacket {
     private static final NetworkDirection DIRECTION = NetworkDirection.PLAY_TO_CLIENT;
     private final float data;
 
-    /** Internal packet creation. */
     private StepHeightSyncPacket(PacketBuffer buf) {
         this.data = buf.readFloat();
     }
@@ -28,17 +27,17 @@ public class StepHeightSyncPacket {
         this.data = data != null ? data : 1.0F;
     }
 
-    /** Called by {@link ModPacketHandler} to decode data on receiving side. */
+    /** Called by a {@link net.minecraftforge.fml.network.simple.SimpleChannel SimpleChannel} to decode data on receiving side. Do not use outside of packet-registration. */
     public static StepHeightSyncPacket decode(PacketBuffer buf){
         return new StepHeightSyncPacket(buf);
     }
 
-    /** Called by {@link ModPacketHandler} to encode data for sending. */
+    /** Called by a {@link net.minecraftforge.fml.network.simple.SimpleChannel SimpleChannel} to encode data for sending. Do not use outside of packet-registration. */
     public void encode(PacketBuffer buf) {
         buf.writeFloat(this.data);
     }
 
-    /** Handle logic using data from {@link #decode(PacketBuffer)}. */
+    /** Called by a {@link net.minecraftforge.fml.network.simple.SimpleChannel SimpleChannel} to handle logic using data from {@linkplain #decode}. Do not use outside of packet-registration. */
     public void handle(Supplier<NetworkEvent.Context> context) {
         CubicThings.LOGGER.debug("Handling Step-Height Sync Packet");
         context.get().enqueueWork(() -> {

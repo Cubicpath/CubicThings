@@ -8,7 +8,7 @@ import com.cubicpath.cubicthings.CubicThings;
 import com.cubicpath.cubicthings.common.enchantment.MultistepEnchantment;
 import com.cubicpath.cubicthings.core.init.EnchantmentInit;
 import com.cubicpath.cubicthings.core.init.NetworkInit;
-import com.cubicpath.cubicthings.core.network.StepHeightSyncPacket;
+import com.cubicpath.cubicthings.common.network.StepHeightSyncPacket;
 
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;

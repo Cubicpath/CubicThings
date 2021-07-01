@@ -1,0 +1,11 @@
+////////////////////////////////////////////////////////////////////////////////
+//                    MIT Licence (C) 2021 Cubicpath@Github                    /
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Anything used client-only is in this package.
+ *
+ * @since 0.1.0
+ * @author Cubicpath@Github
+ */
+package com.cubicpath.cubicthings.client;
