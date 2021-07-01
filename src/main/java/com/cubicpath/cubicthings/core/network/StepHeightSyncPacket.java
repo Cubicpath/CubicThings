@@ -4,6 +4,7 @@
 
 package com.cubicpath.cubicthings.core.network;
 
+import com.cubicpath.cubicthings.CubicThings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.network.PacketBuffer;
@@ -39,7 +40,7 @@ public class StepHeightSyncPacket {
 
     /** Handle logic using data from {@link #decode(PacketBuffer)}. */
     public void handle(Supplier<NetworkEvent.Context> context) {
-        //TestMod.LOGGER.debug("Handling Step-Height Sync Packet");
+        CubicThings.LOGGER.debug("Handling Step-Height Sync Packet");
         context.get().enqueueWork(() -> {
             ClientPlayerEntity player = Minecraft.getInstance().player;
             assert player != null;

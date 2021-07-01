@@ -2,7 +2,7 @@
 //                    MIT Licence (C) 2021 Cubicpath@Github                    /
 ////////////////////////////////////////////////////////////////////////////////
 
-package com.cubicpath.cubicthings.util;
+package com.cubicpath.util;
 
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;

@@ -36,16 +36,16 @@ public final class CubicThings {
         modEventBus.addListener(this::processIMC);
 
         // Register Stuff
-        BlockInit.BLOCKS.register(modEventBus);
-        ItemInit.ITEMS.register(modEventBus);
-        EnchantmentInit.ENCHANTMENTS.register(modEventBus);
+        BlockInit.BLOCKS.register(modEventBus); LOGGER.info("Blocks Registered");
+        ItemInit.ITEMS.register(modEventBus); LOGGER.info("Items Registered");
+        EnchantmentInit.ENCHANTMENTS.register(modEventBus); LOGGER.info("Enchantments Registered");
         //entities
         //tile entities
         //containers
         //biomes
         //dimensions
         //commands
-        NetworkInit.registerPackets();
+        NetworkInit.registerPackets(); LOGGER.info("Network logic Registered");
 
     }
 
