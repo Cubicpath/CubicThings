@@ -10,6 +10,7 @@ import com.cubicpath.cubicthings.core.network.StepHeightSyncPacket;
 
 import java.util.Optional;
 
+@SuppressWarnings("unused")
 public final class NetworkInit {
     private NetworkInit(){
         throw new IllegalStateException();
