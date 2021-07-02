@@ -44,7 +44,7 @@ public final class CubicThings {
         //containers
         //biomes
         //dimensions
-        //commands
+        CommandInit.registerCommands(); LOGGER.info("Commands Registered");
         NetworkInit.registerPackets(); LOGGER.info("Network logic Registered");
 
     }

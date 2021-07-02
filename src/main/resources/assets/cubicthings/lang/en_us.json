@@ -1,4 +1,7 @@
 {
+  "commands.extinguish.success.single": "Extinguished fire from %s",
+  "commands.extinguish.success.multiple": "Extinguished fire from %s entities",
+
   "enchantment.cubicthings.magma_vision": "Magma Vision",
   "enchantment.cubicthings.multistep": "Multistep",
   "enchantment.cubicthings.multimine": "Multimine"
