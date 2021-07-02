@@ -15,8 +15,8 @@ import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.Collection;
 
-public class ExtinguishCommand {
-    private static final String COMMAND_NAME = "extinguish";
+public final class ExtinguishCommand {
+    public static final String COMMAND_NAME = "extinguish";
 
     public static void register(CommandDispatcher<CommandSource> dispatcher){
         dispatcher.register(Commands.literal(COMMAND_NAME).requires((context) -> {

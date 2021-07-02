@@ -1,4 +1,6 @@
 {
+  "commands.burn.success.single": "Burning %s for %s %s",
+  "commands.burn.success.multiple": "Burning %s entities for %s %s",
   "commands.extinguish.success.single": "Extinguished fire from %s",
   "commands.extinguish.success.multiple": "Extinguished fire from %s entities",
 

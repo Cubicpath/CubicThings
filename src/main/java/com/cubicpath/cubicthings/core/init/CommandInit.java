@@ -21,7 +21,7 @@ public final class CommandInit {
     public static List<Consumer<CommandDispatcher<CommandSource>>> commandEntries = new LinkedList<>();
 
     public static void registerCommands() {
-        //commandEntries.add(BurnCommand::register);
+        commandEntries.add(BurnCommand::register);
         commandEntries.add(ExtinguishCommand::register);
         //commandEntries.add(HealCommand::register);
         //commandEntries.add(HurtCommand::register);
