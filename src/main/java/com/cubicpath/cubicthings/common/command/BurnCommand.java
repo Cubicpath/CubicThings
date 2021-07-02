@@ -17,10 +17,10 @@ import net.minecraft.util.text.TranslationTextComponent;
 import java.util.Collection;
 
 public final class BurnCommand {
-    public static final String commandName = "burn";
+    public static final String COMMAND_NAME = "burn";
 
     public static void register(CommandDispatcher<CommandSource> dispatcher){
-        dispatcher.register(Commands.literal(commandName).requires((context) -> {
+        dispatcher.register(Commands.literal(COMMAND_NAME).requires((context) -> {
             return context.hasPermissionLevel(2);
         }).then(Commands.argument("targets", EntityArgument.entities()).executes(context -> {
             // Burns {targets} for 5 seconds if {time} is not specified

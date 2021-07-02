@@ -23,8 +23,8 @@ public final class CommandInit {
     public static void registerCommands() {
         commandEntries.add(BurnCommand::register);
         commandEntries.add(ExtinguishCommand::register);
-        //commandEntries.add(HealCommand::register);
-        //commandEntries.add(HurtCommand::register);
+        commandEntries.add(HealCommand::register);
+        commandEntries.add(HurtCommand::register);
     }
 
 }

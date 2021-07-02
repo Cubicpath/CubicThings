@@ -3,6 +3,10 @@
   "commands.burn.success.multiple": "Burning %s entities for %s %s",
   "commands.extinguish.success.single": "Extinguished fire from %s",
   "commands.extinguish.success.multiple": "Extinguished fire from %s entities",
+  "commands.heal.success.single": "Healed %s from %s damage",
+  "commands.heal.success.multiple": "Healed %s entities from %s damage",
+  "commands.hurt.success.single": "Hurt %s for %s damage",
+  "commands.hurt.success.multiple": "Hurt %s entities for %s damage",
 
   "enchantment.cubicthings.magma_vision": "Magma Vision",
   "enchantment.cubicthings.multistep": "Multistep",
