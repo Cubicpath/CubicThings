@@ -29,12 +29,39 @@ import java.util.Objects;
  **/
 public class RayTraceHelper {
 
+    public static class LookingAtContext {
+        public final float pitch;
+        public final float yaw;
+        public final float yawCos;
+        public final float yawSin;
+        public final float pitchCos;
+        public final float xAngle;
+        public final float yAngle;
+        public final float zAngle;
+        public final Vector3d eyePosition;
+        public final Vector3d eyeLookingTo;
+
+        // uses net.minecraft.item.Item::rayTrace math
+        public LookingAtContext(Entity entityIn, double maxDistance) {
+            this.pitch = entityIn.rotationPitch;
+            this.yaw = entityIn.rotationYaw;
+            this.yawCos = MathHelper.cos(-yaw * ((float)Math.PI / 180F) - (float)Math.PI);
+            this.yawSin = MathHelper.sin(-yaw * ((float)Math.PI / 180F) - (float)Math.PI);
+            this.pitchCos = MathHelper.cos(-pitch * ((float)Math.PI / 180F));
+            this.xAngle = yawSin * -pitchCos;
+            this.yAngle = MathHelper.sin(-pitch * ((float)Math.PI / 180F));
+            this.zAngle = yawCos * -pitchCos;
+            this.eyePosition = entityIn.getEyePosition(1.0F);
+            this.eyeLookingTo = eyePosition.add((double)xAngle * maxDistance, (double)yAngle * maxDistance, (double)zAngle * maxDistance);
+        }
+    }
+
     /** Get the reach distance of a LivingEntity. **/
-    private static double getReachDistance(LivingEntity entityIn){
+    public static double getReachDistance(LivingEntity entityIn){
         return Objects.requireNonNull(entityIn.getAttribute(ForgeMod.REACH_DISTANCE.get())).getValue();
     }
 
-    // uses net.minecraft.item.Item::rayTrace math
+
     /**
      * Create a new {@link RayTraceContext} using an {@link Entity} and where that entity is looking.
      * @param entityIn Entity that you want to create a new ray from.
@@ -44,17 +71,8 @@ public class RayTraceHelper {
      * @return {@link RayTraceContext} from entityIn's eye position.
      */
     public static RayTraceContext newEntityLookingAtContext(Entity entityIn, RayTraceContext.BlockMode blockMode, RayTraceContext.FluidMode fluidMode, double maxDistance){
-        final float pitch = entityIn.rotationPitch;
-        final float yaw = entityIn.rotationYaw;
-        final float yawCos = MathHelper.cos(-yaw * ((float)Math.PI / 180F) - (float)Math.PI);
-        final float yawSin = MathHelper.sin(-yaw * ((float)Math.PI / 180F) - (float)Math.PI);
-        final float pitchCos = MathHelper.cos(-pitch * ((float)Math.PI / 180F));
-        final float pitchSin = MathHelper.sin(-pitch * ((float)Math.PI / 180F));
-        final float xAngle = yawSin * -pitchCos;
-        final float zAngle = yawCos * -pitchCos;
-        final Vector3d eyePosition = entityIn.getEyePosition(1.0F);
-        final Vector3d eyeLookingTo = eyePosition.add((double)xAngle * maxDistance, (double)pitchSin * maxDistance, (double)zAngle * maxDistance);
-        return new RayTraceContext(eyePosition, eyeLookingTo, blockMode, fluidMode, entityIn);
+        Vector3d endVec = new LookingAtContext(entityIn, maxDistance).eyeLookingTo;
+        return new RayTraceContext(entityIn.getEyePosition(1.0F), endVec, blockMode, fluidMode, entityIn);
     }
 
     /**
@@ -67,7 +85,8 @@ public class RayTraceHelper {
      * @return {@link RayTraceContext} from entityIn's eye position.
      */
     public static RayTraceContext newEntityLookingAtContext(Entity entityIn){
-        return newEntityLookingAtContext(entityIn, RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.NONE, 1024);
+        Vector3d endVec = new LookingAtContext(entityIn, 1024).eyeLookingTo;
+        return new RayTraceContext(entityIn.getEyePosition(1.0F), endVec, RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.NONE, entityIn);
     }
 
     /** Do a ray trace, ignore fluids and hit block outlines. **/

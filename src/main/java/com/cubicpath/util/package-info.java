@@ -6,6 +6,6 @@
  * <p>Contains util classes that are used across multiple projects.</p>
  *
  * @author Cubicpath@Github
- * @version 1.0
+ * @version 1.1
  */
 package com.cubicpath.util;
