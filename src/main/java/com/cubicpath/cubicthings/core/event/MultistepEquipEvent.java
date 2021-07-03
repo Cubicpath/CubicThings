@@ -8,7 +8,7 @@ import com.cubicpath.cubicthings.CubicThings;
 import com.cubicpath.cubicthings.common.enchantment.MultistepEnchantment;
 import com.cubicpath.cubicthings.core.init.EnchantmentInit;
 import com.cubicpath.cubicthings.core.init.NetworkInit;
-import com.cubicpath.cubicthings.common.network.StepHeightSyncPacket;
+import com.cubicpath.cubicthings.common.network.SStepHeightSyncPacket;
 
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
@@ -22,7 +22,7 @@ import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.Objects;
 
-/** Fires server-side only, communicates changes to client using {@link StepHeightSyncPacket} */
+/** Fires server-side only, communicates changes to client using {@link SStepHeightSyncPacket} */
 @EventBusSubscriber(modid = CubicThings.MODID)
 public class MultistepEquipEvent {
 
@@ -58,7 +58,7 @@ public class MultistepEquipEvent {
             // Sync the client
             if (eventEntity.stepHeight != oldStepHeight && eventPlayer != null){
                 CubicThings.LOGGER.debug("Sending Step-Height Sync Packet");
-                NetworkInit.PACKET_HANDLER.channel.send(PacketDistributor.PLAYER.with(() -> eventPlayer), new StepHeightSyncPacket(eventPlayer.stepHeight));
+                NetworkInit.PACKET_HANDLER.channel.send(PacketDistributor.PLAYER.with(() -> eventPlayer), new SStepHeightSyncPacket(eventPlayer.stepHeight));
             }
 
         }

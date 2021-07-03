@@ -2,6 +2,14 @@
 //                    MIT Licence (C) 2021 Cubicpath@Github                    /
 ////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////
+//                    MIT Licence (C) 2021 Cubicpath@Github                    /
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+//                    MIT Licence (C) 2021 Cubicpath@Github                    /
+////////////////////////////////////////////////////////////////////////////////
+
 package com.cubicpath.cubicthings.common.network;
 
 import com.cubicpath.cubicthings.CubicThings;
@@ -14,22 +22,22 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
-public class StepHeightSyncPacket {
+public class SStepHeightSyncPacket {
     private static final NetworkDirection DIRECTION = NetworkDirection.PLAY_TO_CLIENT;
     private final float data;
 
-    private StepHeightSyncPacket(PacketBuffer buf) {
+    private SStepHeightSyncPacket(PacketBuffer buf) {
         this.data = buf.readFloat();
     }
 
     /** External packet creation. Null sets data to default {@linkplain ClientPlayerEntity#stepHeight} (0.6F) .*/
-    public StepHeightSyncPacket(@Nullable Float data) {
+    public SStepHeightSyncPacket(@Nullable Float data) {
         this.data = data != null ? data : 1.0F;
     }
 
     /** Called by a {@link net.minecraftforge.fml.network.simple.SimpleChannel SimpleChannel} to decode data on receiving side. Do not use outside of packet-registration. */
-    public static StepHeightSyncPacket decode(PacketBuffer buf){
-        return new StepHeightSyncPacket(buf);
+    public static SStepHeightSyncPacket decode(PacketBuffer buf){
+        return new SStepHeightSyncPacket(buf);
     }
 
     /** Called by a {@link net.minecraftforge.fml.network.simple.SimpleChannel SimpleChannel} to encode data for sending. Do not use outside of packet-registration. */
