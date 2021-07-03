@@ -10,5 +10,7 @@
 
   "enchantment.cubicthings.magma_vision": "Magma Vision",
   "enchantment.cubicthings.multistep": "Multistep",
-  "enchantment.cubicthings.multimine": "Multimine"
+  "enchantment.cubicthings.multimine": "Multimine",
+
+  "item.cubicthings.scanner": "Scanner"
 }
