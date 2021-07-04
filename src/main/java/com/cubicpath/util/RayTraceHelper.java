@@ -90,12 +90,12 @@ public class RayTraceHelper {
     }
 
     /** Do a ray trace, ignore fluids and hit block outlines. **/
-    private static BlockRayTraceResult doBlockRayTrace(Entity entityIn, double maxDistance) {
+    public static BlockRayTraceResult doBlockRayTrace(Entity entityIn, double maxDistance) {
         return entityIn.getEntityWorld().rayTraceBlocks(newEntityLookingAtContext(entityIn, RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.NONE, maxDistance));
     }
 
     /** Do a ray trace, hit fluids and visual outlines. **/
-    private static BlockRayTraceResult doFluidRayTrace(Entity entityIn, double maxDistance) {
+    public static BlockRayTraceResult doFluidRayTrace(Entity entityIn, double maxDistance) {
         return entityIn.getEntityWorld().rayTraceBlocks(newEntityLookingAtContext(entityIn, RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.ANY, maxDistance));
     }
 

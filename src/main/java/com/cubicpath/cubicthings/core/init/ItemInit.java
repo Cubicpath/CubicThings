@@ -21,6 +21,6 @@ public final class ItemInit {
 
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS , CubicThings.MODID);
 
-    public static final RegistryObject<Item> SCANNER = ITEMS.register("scanner", () -> new ScannerItem(new Item.Properties().group(ItemGroup.TOOLS).maxDamage(5000), 40, 10));
+    public static final RegistryObject<Item> SCANNER = ITEMS.register("scanner", () -> new ScannerItem(new Item.Properties().group(ItemGroup.TOOLS).maxDamage(5000), 40, 3));
 
 }
