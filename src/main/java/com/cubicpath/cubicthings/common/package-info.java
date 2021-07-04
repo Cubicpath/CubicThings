@@ -6,6 +6,6 @@
  * Common objects that are shared between the client and server.
  *
  * @since 0.1.0
- * @author Cubicpath@Github
+ * @author Cubicpath
  */
 package com.cubicpath.cubicthings.common;

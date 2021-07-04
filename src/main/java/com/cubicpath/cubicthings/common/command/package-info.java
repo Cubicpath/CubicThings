@@ -3,9 +3,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * <p>Contains util classes that are used across multiple projects.</p>
+ * <p>Commands are handled by {@link com.mojang.brigadier} using Minecraft's {@link com.mojang.brigadier.CommandDispatcher CommandDispatcher} located in {@link net.minecraft.command.Commands}.</p>
  *
+ * @since 0.1.3
  * @author Cubicpath
- * @version 1.1
  */
-package com.cubicpath.util;
+package com.cubicpath.cubicthings.common.command;

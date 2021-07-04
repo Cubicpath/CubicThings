@@ -3,9 +3,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Anything used client-only is in this package.
+ * Anything client-exclusive is in this package.
  *
  * @since 0.1.0
- * @author Cubicpath@Github
+ * @author Cubicpath
  */
 package com.cubicpath.cubicthings.client;

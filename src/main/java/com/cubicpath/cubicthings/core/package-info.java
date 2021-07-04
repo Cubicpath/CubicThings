@@ -6,6 +6,6 @@
  * Functionality used by either both sides or the logical server-side.
  *
  * @since 0.1.0
- * @author Cubicpath@Github
+ * @author Cubicpath
  */
 package com.cubicpath.cubicthings.core;

@@ -13,6 +13,6 @@
  * {@link com.cubicpath.cubicthings.core.init.NetworkInit} - Holds the mod's packet handlers and packet-registration method.
  *
  * @since 0.1.0
- * @author Cubicpath@Github
+ * @author Cubicpath
  */
 package com.cubicpath.cubicthings.core.init;

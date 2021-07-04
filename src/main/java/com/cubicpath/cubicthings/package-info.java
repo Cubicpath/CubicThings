@@ -3,9 +3,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * <p>Contains util classes that are used across multiple projects.</p>
+ * <p>Random assortment of useful things.</p>
  *
  * @author Cubicpath
- * @version 1.1
+ * @version 0.2.0
  */
-package com.cubicpath.util;
+package com.cubicpath.cubicthings;
