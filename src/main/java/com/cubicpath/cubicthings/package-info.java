@@ -6,6 +6,6 @@
  * <p>Random assortment of useful things.</p>
  *
  * @author Cubicpath
- * @version 0.2.0
+ * @version 0.2.1
  */
 package com.cubicpath.cubicthings;
