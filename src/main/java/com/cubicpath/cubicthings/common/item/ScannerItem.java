@@ -34,6 +34,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
 
 public class ScannerItem extends Item {
@@ -105,6 +106,14 @@ public class ScannerItem extends Item {
         }
     }
 
+    public static void setupNBT(ItemStack scanner){
+        new NBTBuilder(scanner.getOrCreateTag())
+                .putString(KEY_MODE, ScannerMode.BLOCKS.name())
+                .put(ScannerMode.BLOCKS.listName, new ListNBT())
+                .put(ScannerMode.BIOMES.listName, new ListNBT())
+                .put(ScannerMode.ENTITIES.listName, new ListNBT());
+    }
+
     public ScannerItem(Properties properties, int maxScanDistance, int scanWidth) {
         super(properties);
         this.maxScanDistance = maxScanDistance;
@@ -131,9 +140,10 @@ public class ScannerItem extends Item {
         return super.onEntitySwing(stack, entity);
     }
 
-    @Nonnull
     @Override
-    public ActionResult<ItemStack> onItemRightClick(@Nonnull World worldIn, @Nonnull PlayerEntity playerIn, @Nonnull Hand handIn) {
+    @Nonnull
+    @ParametersAreNonnullByDefault
+    public ActionResult<ItemStack> onItemRightClick(World worldIn, PlayerEntity playerIn, Hand handIn) {
         final HashSet<ScanData> blockPosToScan = new HashSet<>();
         final ItemStack itemStack = playerIn.getHeldItem(handIn);
         final ScannerMode mode = getScannerMode(itemStack);
@@ -237,24 +247,22 @@ public class ScannerItem extends Item {
     }
 
     @Override
-    public void addInformation(@Nonnull ItemStack stack, @Nullable World worldIn, @Nonnull List<ITextComponent> tooltip, @Nonnull ITooltipFlag flagIn) {
+    @ParametersAreNonnullByDefault
+    public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
     }
 
-    @Nonnull
     @Override
+    @Nonnull
     public ItemStack getDefaultInstance() {
         ItemStack stack = super.getDefaultInstance();
-        new NBTBuilder(stack.getOrCreateTag())
-                .putString(KEY_MODE, ScannerMode.BLOCKS.name())
-                .put(ScannerMode.BLOCKS.listName, new ListNBT())
-                .put(ScannerMode.BIOMES.listName, new ListNBT())
-                .put(ScannerMode.ENTITIES.listName, new ListNBT());
+        setupNBT(stack);
         return stack;
     }
 
     @Override
-    public void fillItemGroup(@Nonnull ItemGroup group, @Nonnull NonNullList<ItemStack> items) {
+    @ParametersAreNonnullByDefault
+    public void fillItemGroup(ItemGroup group, NonNullList<ItemStack> items) {
         if (this.isInGroup(group)) {
             items.add(this.getDefaultInstance());
         }
