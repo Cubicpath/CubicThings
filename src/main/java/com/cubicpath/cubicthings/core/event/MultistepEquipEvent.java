@@ -58,7 +58,7 @@ public class MultistepEquipEvent {
             // Sync the client
             if (eventEntity.stepHeight != oldStepHeight && eventPlayer != null){
                 CubicThings.LOGGER.debug("Sending Step-Height Sync Packet");
-                NetworkInit.PACKET_HANDLER.channel.send(PacketDistributor.PLAYER.with(() -> eventPlayer), new SStepHeightSyncPacket(eventPlayer.stepHeight));
+                NetworkInit.PACKET_HANDLER.sendToPlayer(eventPlayer, new SStepHeightSyncPacket(eventPlayer.stepHeight));
             }
 
         }

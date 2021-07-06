@@ -4,8 +4,10 @@
 
 package com.cubicpath.cubicthings.common.network;
 
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.network.NetworkRegistry;
+import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 public class ModPacketHandler {
@@ -18,6 +20,14 @@ public class ModPacketHandler {
         this.protocolVersion = protocolVersion;
         this.channel = NetworkRegistry.newSimpleChannel(new ResourceLocation(modid, channelPath),
                 () -> this.protocolVersion, this.protocolVersion::equals, this.protocolVersion::equals);
+    }
+
+    public void sendToPlayer(ServerPlayerEntity player, ModPacket packet){
+        this.channel.send(PacketDistributor.PLAYER.with(()->player), packet);
+    }
+
+    public void sendToServer(ModPacket packet){
+        this.channel.sendToServer(packet);
     }
 
 }

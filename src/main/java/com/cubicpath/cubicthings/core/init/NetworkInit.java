@@ -19,7 +19,7 @@ public final class NetworkInit {
 
     public static void registerPackets() {
         PACKET_HANDLER.channel.registerMessage(PACKET_HANDLER.packetIndex++,
-                SStepHeightSyncPacket.class, SStepHeightSyncPacket::encode, SStepHeightSyncPacket::decode, SStepHeightSyncPacket::handle,
+                SStepHeightSyncPacket.class, SStepHeightSyncPacket::encode, SStepHeightSyncPacket::new, SStepHeightSyncPacket::handle,
                 Optional.of(SStepHeightSyncPacket.getDirection()));
 
     }
