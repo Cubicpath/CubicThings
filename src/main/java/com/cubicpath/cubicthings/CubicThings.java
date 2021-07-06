@@ -41,7 +41,7 @@ public final class CubicThings {
         EnchantmentInit.ENCHANTMENTS.register(modEventBus); LOGGER.info("Enchantments Registered");
         //entities
         //tile entities
-        //containers
+        ContainerInit.CONTAINER_TYPES.register(modEventBus); LOGGER.info("Container Types Registered");
         //biomes
         //dimensions
         CommandInit.registerCommands(); LOGGER.info("Commands Registered");
