@@ -14,6 +14,7 @@ import com.cubicpath.cubicthings.core.init.NetworkInit;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.RemoteClientPlayerEntity;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
@@ -22,7 +23,11 @@ import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Quaternion;
@@ -31,6 +36,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -49,7 +55,7 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
     protected static final ResourceLocation SCANNER_SCREEN_TEXTURE = new ResourceLocation(CubicThings.MODID, "textures/gui/container/scanner.png");
 
     /** Non-persistent memory of the last entity selected */
-    protected static LivingEntity entity;
+    protected static Entity entity;
 
     protected float entityYaw = 0.0F;
     protected int mouseX;
@@ -60,13 +66,9 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
     protected Button entityModeButton;
     protected TextFieldWidget entityInputField;
 
-    protected static LivingEntity getDefaultEntity(World world){
-        return new RemoteClientPlayerEntity((ClientWorld)world, new GameProfile(null, "Player"));
-    }
-
     public ScannerScreen(ScannerContainer screenContainer, PlayerInventory inventory, ITextComponent titleIn) {
         super(screenContainer, inventory, titleIn);
-        entity = entity != null ? entity : getDefaultEntity(inventory.player.world);
+        entity = entity != null ? entity : getNewPlayerEntity(inventory.player.world);
         this.xSize = 176;
         this.ySize = 166;
     }
@@ -77,6 +79,10 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
 
     private ScannerItem.ScannerMode getScannerMode(){
         return ScannerItem.getScannerMode(this.container.sourceItemStack);
+    }
+
+    protected static LivingEntity getNewPlayerEntity(World world){
+        return new RemoteClientPlayerEntity((ClientWorld)world, new GameProfile(null, "Player"));
     }
     
     protected ITextComponent currentTargetText(ScannerItem.ScannerMode scannerMode) {
@@ -117,14 +123,24 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
             quaternion.multiply(quaternion1);
             matrixstack.rotate(quaternion);
             boolean isCustomNameVisible = entity.isCustomNameVisible();
-            float renderYawOffset = entity.renderYawOffset;
+            float renderYawOffset = 0.0F;
+            if (entity instanceof LivingEntity) {
+                renderYawOffset = ((LivingEntity) entity).renderYawOffset;
+            }
             float rotationYaw = entity.rotationYaw;
-            float rotationYawHead = entity.rotationYawHead;
+            float rotationYawHead = 0.0F;
+            if (entity instanceof LivingEntity){
+                 rotationYawHead = ((LivingEntity) entity).rotationYawHead;
+            }
             float rotationPitch = entity.rotationPitch;
             entity.setCustomNameVisible(false);
-            entity.renderYawOffset = 180.0F + this.entityYaw * 20.0F;
+            if (entity instanceof LivingEntity) {
+                ((LivingEntity) entity).renderYawOffset = 180.0F + this.entityYaw * 20.0F;
+            }
             entity.rotationYaw = 180.0F + this.entityYaw * 40.0F;
-            entity.rotationYawHead = entity.renderYawOffset;
+            if (entity instanceof LivingEntity) {
+                ((LivingEntity) entity).rotationYawHead = ((LivingEntity) entity).renderYawOffset;
+            }
             entity.rotationPitch = 0.0F;
             EntityRendererManager entityrenderermanager = Minecraft.getInstance().getRenderManager();
             quaternion1.conjugate();
@@ -137,9 +153,13 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
             irendertypebuffer$impl.finish();
             entityrenderermanager.setRenderShadow(true);
             entity.setCustomNameVisible(isCustomNameVisible);
-            entity.renderYawOffset = renderYawOffset;
+            if (entity instanceof LivingEntity) {
+                ((LivingEntity) entity).renderYawOffset = renderYawOffset;
+            }
             entity.rotationYaw = rotationYaw;
-            entity.rotationYawHead = rotationYawHead;
+            if (entity instanceof LivingEntity) {
+                ((LivingEntity) entity).rotationYawHead = rotationYawHead;
+            }
             entity.rotationPitch = rotationPitch;
             RenderSystem.popMatrix();
         }
@@ -216,7 +236,34 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
                     this.entityInputField.setCursorPosition(this.entityInputField.getCursorPosition() + 1);
                     break;
                 }
-                case GLFW.GLFW_KEY_ENTER:
+                case GLFW.GLFW_KEY_ENTER: {
+                    switch (getScannerMode()){
+                        case BLOCKS:
+                            Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(this.entityInputField.getText().trim()));
+                            if (block != null){
+                                entity = EntityType.ITEM.create(this.playerInventory.player.world);
+                            }
+                            break;
+
+                        case BIOMES:
+                            break;
+
+                        case ENTITIES: {
+                            EntityType<?> entityType = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(this.entityInputField.getText().trim()));
+                            if (entityType != null) {
+                                Entity newEntity = entityType.create(this.playerInventory.player.world);
+
+                                if (newEntity instanceof PlayerEntity) {
+                                    entity = getNewPlayerEntity(this.playerInventory.player.world);
+                                } else if (newEntity instanceof LivingEntity) {
+                                    entity = newEntity;
+                                }
+                            }
+                            break;
+                        }
+                    }
+
+                }
                 case GLFW.GLFW_KEY_TAB: {
                     this.entityInputField.setFocused2(false);
                     updateWidgets();
