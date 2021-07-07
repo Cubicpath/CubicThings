@@ -229,7 +229,7 @@ public class ScannerItem extends Item implements INamedContainerProvider {
      * @param blocks Which blocks to scan for
      * @param volume Volume of audio feedback
      * @param pitch Pitch of audio feedback
-     * @return Whether the scanned block is in the {@code blocks} Block array
+     * @return Whether the scanned block is in the {@code blocks} {@linkplain Block} array
      */
     public static boolean scanForBlocks(World world, LivingEntity scanner, BlockPos pos, Block[] blocks, @Nullable Float volume, float pitch) {
         BlockState state = world.getBlockState(pos);
@@ -242,7 +242,7 @@ public class ScannerItem extends Item implements INamedContainerProvider {
     }
 
     /**
-     * Scan an area for {@linkplain net.minecraft.entity.Entity Entities} at {@linkplain BlockPos} {@code pos}. If the {@linkplain EntityType} value of the entity scanned is in the
+     * Scan a 1x1 area for {@linkplain net.minecraft.entity.Entity Entities} at {@linkplain BlockPos} {@code pos}. If the {@linkplain EntityType} value of the entity scanned is in the
      * {@code entityTypes} EntityType<?> array, play a sound and return true.
      *
      * @param world World to scan in
@@ -251,7 +251,7 @@ public class ScannerItem extends Item implements INamedContainerProvider {
      * @param entityTypes Which blocks to scan for
      * @param volume Volume of audio feedback
      * @param pitch Pitch of audio feedback
-     * @return Whether the scanned block is in the {@code blocks} Block array
+     * @return Whether the scanned entity is in the {@code entityTypes} {@linkplain EntityType} array
      */
     public static boolean scanForEntities(World world, LivingEntity scanner, BlockPos pos, EntityType<?>[] entityTypes, @Nullable Float volume, float pitch) {
         List<Object> entitiesWithinAABB = new LinkedList<>();
