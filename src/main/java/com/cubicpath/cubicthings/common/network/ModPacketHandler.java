@@ -23,7 +23,15 @@ public class ModPacketHandler {
     }
 
     public void sendToPlayer(ServerPlayerEntity player, ModPacket packet){
-        this.channel.send(PacketDistributor.PLAYER.with(()->player), packet);
+        this.channel.send(PacketDistributor.PLAYER.with(() -> player), packet);
+    }
+
+    public void sendToPlayers(ServerPlayerEntity[] players, ModPacket packet){
+        for (ServerPlayerEntity player : players) this.channel.send(PacketDistributor.PLAYER.with(() -> player), packet);
+    }
+
+    public void sendToAllPlayers(ModPacket packet){
+        this.channel.send(PacketDistributor.ALL.noArg(), packet);
     }
 
     public void sendToServer(ModPacket packet){

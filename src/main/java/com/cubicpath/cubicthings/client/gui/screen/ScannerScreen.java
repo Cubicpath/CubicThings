@@ -83,11 +83,13 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
             Quaternion quaternion1 = Vector3f.XP.rotationDegrees(0);
             quaternion.multiply(quaternion1);
             matrixstack.rotate(quaternion);
+            boolean isCustomNameVisible = entity.isCustomNameVisible();
             float renderYawOffset = entity.renderYawOffset;
             float rotationYaw = entity.rotationYaw;
             float rotationYawHead = entity.rotationYawHead;
             float prevRotationYawHead = entity.prevRotationYawHead;
             float rotationPitch = entity.rotationPitch;
+            entity.setCustomNameVisible(false);
             entity.renderYawOffset = 180.0F + f * 20.0F;
             entity.rotationYaw = 180.0F + f * 40.0F;
             entity.rotationYawHead = entity.rotationYaw;
@@ -103,6 +105,7 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
             });
             irendertypebuffer$impl.finish();
             entityrenderermanager.setRenderShadow(true);
+            entity.setCustomNameVisible(isCustomNameVisible);
             entity.renderYawOffset = renderYawOffset;
             entity.rotationYaw = rotationYaw;
             entity.rotationYawHead = rotationYawHead;

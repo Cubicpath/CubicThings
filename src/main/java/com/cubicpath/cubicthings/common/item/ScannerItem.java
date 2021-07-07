@@ -34,6 +34,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkHooks;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -85,7 +86,6 @@ public class ScannerItem extends Item implements INamedContainerProvider {
 
     }
 
-    public static final String SCANNER_SCREEN_NAME = "Scanner Menu";
     public static final String KEY_MODE = "ScannerMode"; // String NBT
     public static final String KEY_TARGETS_BLOCK = "BlockTargets"; // List NBT
     public static final String KEY_TARGETS_BIOME = "BiomeTargets"; // List NBT
@@ -320,7 +320,7 @@ public class ScannerItem extends Item implements INamedContainerProvider {
     @Override
     @Nonnull
     public ITextComponent getDisplayName() {
-        return ITextComponent.getTextComponentOrEmpty(SCANNER_SCREEN_NAME);
+        return new TranslationTextComponent("gui.scannerMenu");
     }
 
     @Override

@@ -4,6 +4,7 @@
 
 package com.cubicpath.cubicthings.client.event;
 
+import com.cubicpath.cubicthings.CubicThings;
 import com.cubicpath.cubicthings.core.init.EnchantmentInit;
 
 import net.minecraft.client.entity.player.ClientPlayerEntity;
@@ -12,11 +13,12 @@ import net.minecraft.fluid.FluidState;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.potion.Effects;
 import net.minecraft.tags.FluidTags;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
-@EventBusSubscriber
+@EventBusSubscriber(modid = CubicThings.MODID, value = Dist.CLIENT)
 public class MagmaVisionFogEvent {
 
     @SubscribeEvent
