@@ -28,7 +28,7 @@ public final class CubicThings {
     public static final String MODID = "cubicthings";
 
     public static final String MODNAME = "Cubic Things";
-    public static final String MODVER = "0.2.2";
+    public static final String MODVER = "0.2.3";
     public static final String MCVER = "1.16.5";
 
     public CubicThings() {
