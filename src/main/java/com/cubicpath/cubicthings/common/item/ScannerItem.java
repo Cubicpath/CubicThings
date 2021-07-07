@@ -12,7 +12,6 @@ import com.cubicpath.util.RayTraceHelper;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -168,7 +167,7 @@ public class ScannerItem extends Item implements INamedContainerProvider {
                 }
 
                 // Scans client-side only
-                if (playerIn instanceof ClientPlayerEntity){
+                if (worldIn.isRemote()){
                     markPosToScan(blockPosToScan, playerIn, worldIn);
                 }
 
@@ -189,7 +188,7 @@ public class ScannerItem extends Item implements INamedContainerProvider {
                 }
 
                 // Scans client-side only
-                if (playerIn instanceof ClientPlayerEntity){
+                if (worldIn.isRemote()){
                     markPosToScan(blockPosToScan,playerIn, worldIn);
                 }
 
@@ -266,8 +265,6 @@ public class ScannerItem extends Item implements INamedContainerProvider {
      * @param worldIn World to scan
      */
     public void markPosToScan(Set<ScanContext> set, LivingEntity entityIn, World worldIn){
-        BlockPos posToScan;
-        BlockPos posToScan1;
         final int soundLimit = 100;
         final int worldHeight = worldIn.getHeight();
         final int worldDepth = 0;
@@ -275,19 +272,20 @@ public class ScannerItem extends Item implements INamedContainerProvider {
 
         for (int i = 0; i < traceContext.eyePosition.distanceTo(traceContext.eyeLookingTo); i++) {
             Vector3d vector3d = traceContext.eyePosition.add(new Vector3d(traceContext.xAngle * i, traceContext.yAngle * i, traceContext.zAngle * i));
-            posToScan = new BlockPos(vector3d);
+            final BlockPos posToScan = new BlockPos(vector3d);
             if (posToScan.getY() >= worldDepth && posToScan.getY() <= worldHeight) {
-                set.add(new ScanContext(worldIn, posToScan,0.8F / ((float)traceContext.eyePosition.squareDistanceTo(vector3d) / 2), 5.0F));
+                set.add(new ScanContext(worldIn, posToScan,1.0F / ((float)traceContext.eyePosition.squareDistanceTo(vector3d) / 2), 5.0F));
 
                 int soundCounter = 0;
                 for (int x = -this.scanWidth; x <= this.scanWidth; x++) {
                     for (int y = -this.scanWidth; y <= this.scanWidth ; y++) {
                         for (int z = -this.scanWidth; z <= this.scanWidth ; z++) {
                             soundCounter++;
-                            posToScan1 = new BlockPos(vector3d.add(x, y, z));
-                            if (posToScan1 != posToScan && posToScan1.withinDistance(vector3d, (float)this.maxScanDistance / 2)) {
+                            final BlockPos posToScan1 = new BlockPos(vector3d.add(x, y, z));
+
+                            if (set.stream().noneMatch(scanContext -> posToScan1 == scanContext.blockPos) && posToScan1.withinDistance(vector3d, (float)this.maxScanDistance / 2)) {
                                 float soundDivider = ((float)traceContext.eyePosition.squareDistanceTo(posToScan1.getX(), posToScan1.getY(), posToScan1.getZ()) / 2) / ((float)posToScan1.distanceSq(vector3d, true) / this.scanWidth);
-                                set.add(new ScanContext(worldIn, posToScan1, soundCounter <= soundLimit ? (0.4F / soundDivider) : null, 5.0F));
+                                set.add(new ScanContext(worldIn, posToScan1, soundCounter <= soundLimit ? (0.25F / soundDivider) : null, 5.0F));
                             }
                         }
                     }

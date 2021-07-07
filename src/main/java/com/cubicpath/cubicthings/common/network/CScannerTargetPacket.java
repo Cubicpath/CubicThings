@@ -6,7 +6,6 @@ package com.cubicpath.cubicthings.common.network;
 
 import com.cubicpath.cubicthings.common.item.ScannerItem;
 
-import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
@@ -24,7 +23,7 @@ public class CScannerTargetPacket extends ModPacket {
 
     public CScannerTargetPacket(PacketBuffer buf) {
         super(buf);
-        this.scanTarget = buf.readString();
+        this.scanTarget = buf.readString(32767);
         this.slotIndex = buf.readInt();
         this.remove = buf.readBoolean();
     }
