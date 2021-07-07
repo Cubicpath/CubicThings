@@ -22,6 +22,9 @@ public final class NetworkInit {
         PACKET_HANDLER.channel.registerMessage(PACKET_HANDLER.packetIndex++,
                 CScannerModePacket.class, CScannerModePacket::encode, CScannerModePacket::new, CScannerModePacket::handle,
                 Optional.of(CScannerModePacket.getDirection()));
+        PACKET_HANDLER.channel.registerMessage(PACKET_HANDLER.packetIndex++,
+                CScannerTargetPacket.class, CScannerTargetPacket::encode, CScannerTargetPacket::new, CScannerTargetPacket::handle,
+                Optional.of(CScannerTargetPacket.getDirection()));
 
         // Server Packets
         PACKET_HANDLER.channel.registerMessage(PACKET_HANDLER.packetIndex++,

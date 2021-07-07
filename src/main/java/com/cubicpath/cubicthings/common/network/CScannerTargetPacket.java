@@ -16,26 +16,30 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-public class CScannerModePacket extends ModPacket {
+public class CScannerTargetPacket extends ModPacket {
     private static final NetworkDirection DIRECTION = NetworkDirection.PLAY_TO_SERVER;
-    private final ScannerItem.ScannerMode scannerMode;
+    private final String scanTarget;
     private final int slotIndex;
+    private final boolean remove;
 
-    public CScannerModePacket(PacketBuffer buf) {
+    public CScannerTargetPacket(PacketBuffer buf) {
         super(buf);
-        this.scannerMode = buf.readEnumValue(ScannerItem.ScannerMode.class);
+        this.scanTarget = buf.readString();
         this.slotIndex = buf.readInt();
+        this.remove = buf.readBoolean();
     }
 
-    /** External packet creation.*/
-    public CScannerModePacket(ScannerItem.ScannerMode scannerMode, int slotIndex) {
-        this.scannerMode = scannerMode;
+    /** External packet creation. */
+    public CScannerTargetPacket(String scanTarget, int slotIndex, boolean remove) {
+        this.scanTarget = scanTarget;
         this.slotIndex = slotIndex;
+        this.remove = remove;
     }
 
     public void encode(PacketBuffer buf) {
-        buf.writeEnumValue(this.scannerMode);
+        buf.writeString(this.scanTarget);
         buf.writeInt(this.slotIndex);
+        buf.writeBoolean(this.remove);
     }
 
     public void handle(Supplier<NetworkEvent.Context> context) {
@@ -43,7 +47,11 @@ public class CScannerModePacket extends ModPacket {
             ServerPlayerEntity player = context.get().getSender();
             ItemStack stack = Objects.requireNonNull(player, "Sender cannot be null.").inventory.getStackInSlot(this.slotIndex);
             if (stack.getItem() instanceof ScannerItem){
-                ScannerItem.setScannerMode(stack, this.scannerMode);
+                if (this.remove) {
+                    ScannerItem.removeTarget(stack, ScannerItem.getScannerMode(stack), this.scanTarget);
+                } else {
+                    ScannerItem.addTarget(stack, ScannerItem.getScannerMode(stack), this.scanTarget);
+                }
             }
         });
         context.get().setPacketHandled(true);

@@ -18,7 +18,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.event.entity.living.LivingEquipmentChangeEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.Objects;
 
@@ -57,7 +56,6 @@ public class MultistepEquipEvent {
             }
             // Sync the client
             if (eventEntity.stepHeight != oldStepHeight && eventPlayer != null){
-                CubicThings.LOGGER.debug("Sending Step-Height Sync Packet");
                 NetworkInit.PACKET_HANDLER.sendToPlayer(eventPlayer, new SStepHeightSyncPacket(eventPlayer.stepHeight));
             }
 

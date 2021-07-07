@@ -5,7 +5,6 @@
 package com.cubicpath.cubicthings.common.item;
 
 
-import com.cubicpath.cubicthings.CubicThings;
 import com.cubicpath.cubicthings.common.container.ScannerContainer;
 import com.cubicpath.util.ItemStackHolder;
 import com.cubicpath.util.NBTBuilder;
@@ -13,7 +12,6 @@ import com.cubicpath.util.RayTraceHelper;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityType;
@@ -111,11 +109,17 @@ public class ScannerItem extends Item implements INamedContainerProvider {
     public static void addTarget(ItemStack scanner, ScannerMode mode, String string){
         ListNBT targetList = mode.getTargetList(scanner);
         StringNBT stringNBT = StringNBT.valueOf(string);
-        CubicThings.LOGGER.info(targetList);
 
         if (!targetList.contains(stringNBT)) {
             targetList.add(stringNBT);
         }
+    }
+
+    public static void removeTarget(ItemStack scanner, ScannerMode mode, String string){
+        ListNBT targetList = mode.getTargetList(scanner);
+        StringNBT stringNBT = StringNBT.valueOf(string);
+
+        targetList.remove(stringNBT);
     }
 
     public static void setupNBT(ItemStack scanner){
@@ -158,7 +162,6 @@ public class ScannerItem extends Item implements INamedContainerProvider {
         switch (mode){
             default:
             case BLOCKS: {
-                addTarget(itemStack, ScannerMode.BLOCKS, Objects.requireNonNull(ForgeRegistries.BLOCKS.getKey(Blocks.DIAMOND_ORE)).toString());
                 final Block[] blockTargets = new Block[targetNBT.size()];
                 for (int i = 0; i < targetNBT.size(); i++) {
                     blockTargets[i] = ForgeRegistries.BLOCKS.getValue(ResourceLocation.tryCreate(targetNBT.getString(i)));
@@ -180,7 +183,6 @@ public class ScannerItem extends Item implements INamedContainerProvider {
             case BIOMES: break;
 
             case ENTITIES: {
-                addTarget(itemStack, ScannerMode.ENTITIES, Objects.requireNonNull(ForgeRegistries.ENTITIES.getKey(EntityType.ZOMBIE)).toString());
                 final EntityType<?>[] entityTargets = new EntityType<?>[targetNBT.size()];
                 for (int i = 0; i < targetNBT.size(); i++) {
                     entityTargets[i] = ForgeRegistries.ENTITIES.getValue(ResourceLocation.tryCreate(targetNBT.getString(i)));
@@ -233,7 +235,7 @@ public class ScannerItem extends Item implements INamedContainerProvider {
 
     /**
      * Scan a 1x1 area for {@linkplain net.minecraft.entity.Entity Entities} at {@linkplain BlockPos} {@code pos}. If the {@linkplain EntityType} value of the entity scanned is in the
-     * {@code entityTypes} EntityType<?> array, play a sound and return true.
+     * {@code entityTypes} EntityType<?> array, play a sound and return true. Ignores the entity that started scanning.
      *
      * @param world World to scan in
      * @param scanner Entity that started the scan
@@ -247,7 +249,7 @@ public class ScannerItem extends Item implements INamedContainerProvider {
         List<Object> entitiesWithinAABB = new LinkedList<>();
 
         if (Arrays.stream(entityTypes).anyMatch((entityType) -> {
-            entitiesWithinAABB.addAll(world.getEntitiesWithinAABB(entityType, new AxisAlignedBB(pos), (a) -> true));
+            entitiesWithinAABB.addAll(world.getEntitiesWithinAABB(entityType, new AxisAlignedBB(pos), (a) -> !a.equals(scanner)));
             return entitiesWithinAABB.size() > 0;
         })) {
             if (volume != null) world.playSound(scanner instanceof PlayerEntity ? (PlayerEntity)scanner : null, pos, SoundEvents.UI_BUTTON_CLICK, SoundCategory.PLAYERS, volume * 2 * entitiesWithinAABB.size(), pitch);
