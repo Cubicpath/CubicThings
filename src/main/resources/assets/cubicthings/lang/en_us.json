@@ -12,5 +12,9 @@
   "enchantment.cubicthings.multistep": "Multistep",
   "enchantment.cubicthings.multimine": "Multimine",
 
+  "gui.scannerMenu.target" : "Target",
+  "gui.scannerMenu.addEntity" : "Add Entity",
+  "gui.scannerMenu.removeEntity" : "Remove Entity",
+
   "item.cubicthings.scanner": "Scanner"
 }

@@ -7,13 +7,13 @@ package com.cubicpath.cubicthings.common.item;
 
 import com.cubicpath.cubicthings.CubicThings;
 import com.cubicpath.cubicthings.common.container.ScannerContainer;
+import com.cubicpath.util.ItemStackHolder;
 import com.cubicpath.util.NBTBuilder;
 import com.cubicpath.util.RayTraceHelper;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityType;
@@ -135,19 +135,9 @@ public class ScannerItem extends Item implements INamedContainerProvider {
     @Override
     public boolean onEntitySwing(ItemStack stack, LivingEntity entity) {
         if (entity.isCrouching()) {
-            ScannerMode mode;
-            try {
-                mode = ScannerMode.values()[(getScannerMode(stack).ordinal() + 1)];
-                CubicThings.LOGGER.info(mode);
-            } catch (ArrayIndexOutOfBoundsException e) {
-                mode = ScannerMode.values()[0];
-            }
-            setScannerMode(stack, mode);
-            if (entity instanceof ClientPlayerEntity) {
-                entity.getEntityWorld().playSound((ClientPlayerEntity)entity, entity.getPosition(), SoundEvents.UI_BUTTON_CLICK, SoundCategory.PLAYERS, 1.0F, 0.2F);
-                Minecraft.getInstance().ingameGUI.setOverlayMessage(ITextComponent.getTextComponentOrEmpty("\u00A77Changed scanner mode to: \u00A7b" + mode.toTitleCase()), false);
-            } else if (entity instanceof ServerPlayerEntity) {
-                NetworkHooks.openGui((ServerPlayerEntity) entity, this);
+            if (entity instanceof ServerPlayerEntity) {
+                ItemStackHolder stackHolder = new ItemStackHolder(stack);
+                NetworkHooks.openGui((ServerPlayerEntity) entity, this, stackHolder::writeToBuffer);
             }
             return true;
         }
@@ -213,7 +203,7 @@ public class ScannerItem extends Item implements INamedContainerProvider {
 
         actionResult = Arrays.stream(scanResults).anyMatch((scanResult) -> scanResult) ? ActionResult.resultConsume(itemStack) : ActionResult.resultPass(itemStack);
         // If any of the results are true, consume; else pass.
-        if (actionResult.getType() == ActionResultType.CONSUME && !playerIn.isCreative()) {
+        if (playerIn instanceof ServerPlayerEntity && actionResult.getType() == ActionResultType.CONSUME && !playerIn.isCreative()) {
             itemStack.attemptDamageItem(1, playerIn.getRNG(), (ServerPlayerEntity)playerIn);
         }
         return actionResult;

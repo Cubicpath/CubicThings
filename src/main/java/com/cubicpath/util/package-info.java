@@ -3,9 +3,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * <p>Contains util classes that are used across multiple projects.</p>
+ * <p>Contains util classes that are project-ambiguous.</p>
  *
  * @author Cubicpath
- * @version 1.1
+ * @version 1.2
  */
 package com.cubicpath.util;

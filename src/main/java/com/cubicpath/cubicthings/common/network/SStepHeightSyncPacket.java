@@ -12,7 +12,6 @@
 
 package com.cubicpath.cubicthings.common.network;
 
-import com.cubicpath.cubicthings.CubicThings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.network.PacketBuffer;
@@ -42,7 +41,6 @@ public class SStepHeightSyncPacket extends ModPacket {
     }
 
     public void handle(Supplier<NetworkEvent.Context> context) {
-        CubicThings.LOGGER.debug("Handling Step-Height Sync Packet");
         context.get().enqueueWork(() -> {
             ClientPlayerEntity player = Minecraft.getInstance().player;
             Objects.requireNonNull(player).stepHeight = this.data - 0.4f;

@@ -18,10 +18,15 @@ public final class NetworkInit {
     public static final ModPacketHandler PACKET_HANDLER = new ModPacketHandler(CubicThings.MODID, "main", "1");
 
     public static void registerPackets() {
+        // Client Packets
+        PACKET_HANDLER.channel.registerMessage(PACKET_HANDLER.packetIndex++,
+                CScannerModePacket.class, CScannerModePacket::encode, CScannerModePacket::new, CScannerModePacket::handle,
+                Optional.of(CScannerModePacket.getDirection()));
+
+        // Server Packets
         PACKET_HANDLER.channel.registerMessage(PACKET_HANDLER.packetIndex++,
                 SStepHeightSyncPacket.class, SStepHeightSyncPacket::encode, SStepHeightSyncPacket::new, SStepHeightSyncPacket::handle,
                 Optional.of(SStepHeightSyncPacket.getDirection()));
-
     }
 
 }
