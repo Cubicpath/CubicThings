@@ -11,7 +11,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle'
 
 group = 'com.cubicpath'
-version = '0.2.1'
+version = "${minecraft_version}-0.2.2"
 archivesBaseName = 'cubicthings'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(8) // Java 8.
