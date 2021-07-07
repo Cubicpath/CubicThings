@@ -11,7 +11,12 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
-/** Builder wrapper for {@link CompoundNBT} objects. */
+/**
+ * Builder wrapper for {@link CompoundNBT} objects.
+ *
+ * @since 1.0
+ * @author Cubicpath
+ */
 public class NBTBuilder {
     private final CompoundNBT data;
 

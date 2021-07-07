@@ -26,7 +26,9 @@ import java.util.Objects;
  * @see BlockRayTraceResult
  * @see EntityRayTraceResult
  *
- **/
+ * @since 1.0
+ * @author Cubicpath
+ */
 public class RayTraceHelper {
 
     public static class LookingAtContext {
