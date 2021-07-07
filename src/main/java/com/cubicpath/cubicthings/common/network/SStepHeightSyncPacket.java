@@ -43,7 +43,7 @@ public class SStepHeightSyncPacket extends ModPacket {
     public void handle(Supplier<NetworkEvent.Context> context) {
         context.get().enqueueWork(() -> {
             ClientPlayerEntity player = Minecraft.getInstance().player;
-            Objects.requireNonNull(player).stepHeight = this.data - 0.4f;
+            Objects.requireNonNull(player, "Client player cannot be null.").stepHeight = this.data - 0.4f;
         });
         context.get().setPacketHandled(true);
     }

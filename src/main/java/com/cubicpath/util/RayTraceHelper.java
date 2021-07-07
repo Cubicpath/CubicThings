@@ -60,7 +60,7 @@ public class RayTraceHelper {
 
     /** Get the reach distance of a LivingEntity. **/
     public static double getReachDistance(LivingEntity entityIn){
-        return Objects.requireNonNull(entityIn.getAttribute(ForgeMod.REACH_DISTANCE.get())).getValue();
+        return Objects.requireNonNull(entityIn.getAttribute(ForgeMod.REACH_DISTANCE.get()), "Reach distance cannot be null.").getValue();
     }
 
 

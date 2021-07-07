@@ -33,7 +33,7 @@ public class MultistepEquipEvent {
     @SubscribeEvent
     public static void multistepEquipEvent(final LivingEquipmentChangeEvent event){
         final LivingEntity eventEntity = event.getEntityLiving();
-        final ServerPlayerEntity eventPlayer = Objects.requireNonNull(eventEntity.getEntityWorld().getServer()).getPlayerList().getPlayerByUUID(eventEntity.getUniqueID());
+        final ServerPlayerEntity eventPlayer = Objects.requireNonNull(eventEntity.getEntityWorld().getServer(), "Entity's world's server cannot be null.").getPlayerList().getPlayerByUUID(eventEntity.getUniqueID());
         final ItemStack oldEquip = event.getFrom();
         final ItemStack newEquip = event.getTo();
         final float oldStepHeight = eventEntity.stepHeight;

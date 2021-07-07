@@ -214,7 +214,7 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
     @ParametersAreNonnullByDefault
     protected void drawGuiContainerBackgroundLayer(MatrixStack matrixStack, float partialTicks, int x, int y) {
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-        Objects.requireNonNull(this.minecraft).getTextureManager().bindTexture(SCANNER_SCREEN_TEXTURE);
+        Objects.requireNonNull(this.minecraft, "Minecraft cannot be null.").getTextureManager().bindTexture(SCANNER_SCREEN_TEXTURE);
         this.blit(matrixStack, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
         this.drawEntityOnScreen(this.guiLeft + 125, this.guiTop + 95, this.ySize / 5);
     }
