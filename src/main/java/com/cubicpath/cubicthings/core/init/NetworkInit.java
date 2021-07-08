@@ -19,17 +19,11 @@ public final class NetworkInit {
 
     public static void registerPackets() {
         // Client Packets
-        PACKET_HANDLER.channel.registerMessage(PACKET_HANDLER.packetIndex++,
-                CScannerModePacket.class, CScannerModePacket::encode, CScannerModePacket::new, CScannerModePacket::handle,
-                Optional.of(CScannerModePacket.getDirection()));
-        PACKET_HANDLER.channel.registerMessage(PACKET_HANDLER.packetIndex++,
-                CScannerTargetPacket.class, CScannerTargetPacket::encode, CScannerTargetPacket::new, CScannerTargetPacket::handle,
-                Optional.of(CScannerTargetPacket.getDirection()));
+        PACKET_HANDLER.registerPacket(CScannerModePacket.class, CScannerModePacket::new, CScannerModePacket.getDirection());
+        PACKET_HANDLER.registerPacket(CScannerTargetPacket.class, CScannerTargetPacket::new, CScannerTargetPacket.getDirection());
 
         // Server Packets
-        PACKET_HANDLER.channel.registerMessage(PACKET_HANDLER.packetIndex++,
-                SStepHeightSyncPacket.class, SStepHeightSyncPacket::encode, SStepHeightSyncPacket::new, SStepHeightSyncPacket::handle,
-                Optional.of(SStepHeightSyncPacket.getDirection()));
+        PACKET_HANDLER.registerPacket(SStepHeightSyncPacket.class, SStepHeightSyncPacket::new, SStepHeightSyncPacket.getDirection());
     }
 
 }
