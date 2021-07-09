@@ -57,6 +57,8 @@ public class ScannerItem extends Item implements INamedContainerProvider {
 
         public ListNBT getTargetList(ItemStack scanner){
             CompoundNBT compoundnbt = scanner.getOrCreateTag();
+            if (!compoundnbt.contains(this.listName))
+                compoundnbt.put(this.listName, new ListNBT());
             return compoundnbt.getList(this.listName, this.listType);
         }
 
@@ -93,6 +95,7 @@ public class ScannerItem extends Item implements INamedContainerProvider {
     /** Return the {@linkplain #KEY_MODE} NBT value. */
     public static ScannerMode getScannerMode(ItemStack scanner) {
         CompoundNBT compoundnbt = scanner.getOrCreateTag();
+        if (!compoundnbt.contains(KEY_MODE)) compoundnbt.putString(KEY_MODE, "Blocks");
         if (!compoundnbt.getString(KEY_MODE).isEmpty())
             return ScannerMode.valueOf(compoundnbt.getString(KEY_MODE).toUpperCase());
         return ScannerMode.BLOCKS;

@@ -5,6 +5,7 @@
 package com.cubicpath.cubicthings.client.gui.screen;
 
 import com.cubicpath.cubicthings.CubicThings;
+import com.cubicpath.cubicthings.client.gui.widget.ScannerTargetListWidget;
 import com.cubicpath.cubicthings.common.container.ScannerContainer;
 import com.cubicpath.cubicthings.common.item.ScannerItem;
 import com.cubicpath.cubicthings.common.network.CScannerModePacket;
@@ -16,9 +17,11 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.Block;
 import net.minecraft.client.entity.player.RemoteClientPlayerEntity;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.client.gui.widget.list.ExtendedList;
 import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
@@ -28,6 +31,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Pose;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -38,12 +42,13 @@ import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.client.model.data.EmptyModelData;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Information on how to render the Scanner's internal container.
@@ -59,6 +64,7 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
     /** Non-persistent memory of the last object selected */
     protected static Object renderTarget;
 
+    protected boolean clickedTargetField = false;
     protected float renderYaw = 0.0F;
     protected int mouseX;
     protected int mouseY;
@@ -70,6 +76,7 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
     protected Button targetsClearButton;
     protected Button targetModeButton;
     protected TextFieldWidget targetInputField;
+    protected ScannerTargetListWidget targetList;
 
     public ScannerScreen(ScannerContainer screenContainer, PlayerInventory inventory, ITextComponent titleIn) {
         super(screenContainer, inventory, titleIn);
@@ -77,6 +84,7 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
         this.world = (ClientWorld)inventory.player.world;
         this.xSize = 176;
         this.ySize = 166;
+        this.titleX = 9;
         renderTarget = renderTarget != null ? renderTarget : createNewDummyPlayer(this.world);
     }
 
@@ -100,8 +108,23 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
         return new TranslationTextComponent("gui.scannerMenu.target", getScannerMode().toTitleCase());
     }
 
+    public FontRenderer getFontRenderer()
+    {
+        return this.font;
+    }
+
+    public <T extends ExtendedList.AbstractListEntry<T>> void buildTargetList(Consumer<T> targetListViewConsumer, Function<String, T> newEntry) {
+        getStoredTargetSet().stream().sorted().forEach(string -> targetListViewConsumer.accept(newEntry.apply(string)));
+    }
+
     public void updateWidgets(){
         boolean validInput = !this.targetInputField.getText().trim().isEmpty() && ResourceLocation.isResouceNameValid(this.targetInputField.getText().toLowerCase().trim());
+
+        if (!this.clickedTargetField && this.targetInputField.isFocused()) {
+            this.targetInputField.setText("");
+            this.targetInputField.setTextColor(0xDDDD44);
+            this.clickedTargetField = true;
+        }
 
         this.targetAddButton.setMessage(new TranslationTextComponent("gui.scannerMenu.target.add", getScannerMode().toTitleCase().replace("ies", "y").concat("\t").replace("s\t", "").trim()));
         this.targetAddButton.active = validInput && getStoredTargetSet().stream().noneMatch((string) -> string.equals(this.targetInputField.getText().toLowerCase().trim()) || string.replaceFirst("minecraft:", "").equals(this.targetInputField.getText().toLowerCase().trim()));
@@ -110,7 +133,9 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
         this.targetRemoveButton.active = validInput && getStoredTargetSet().stream().anyMatch((string) -> string.equals(this.targetInputField.getText().toLowerCase().trim()) || string.replaceFirst("minecraft:", "").equals(this.targetInputField.getText().toLowerCase().trim()));
 
         this.targetsClearButton.setMessage(new TranslationTextComponent("gui.scannerMenu.target.clear", getScannerMode().toTitleCase()));
-        this.targetsClearButton.active = true;
+        this.targetsClearButton.active = getStoredTargetSet().size() > 0;
+
+        this.targetList.refreshList();
     }
 
     //uses net.minecraft.client.gui.screen.inventory::drawEntityOnScreen math
@@ -165,40 +190,42 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
             RenderSystem.popMatrix();
         }
         else if (renderTarget instanceof Block) {
-            // Code defined for debugging purposes
-            if (false) {
-                Block block = (Block)renderTarget;
+            Block block = (Block)renderTarget;
+            renderTarget = new ItemEntity(this.world, 0, 0, 0, block.asItem().getDefaultInstance());
+            drawTargetOnScreen(posX, posY, scale);
 
-                RenderSystem.pushMatrix();
-                RenderSystem.translatef((float) posX, (float) posY, 1050.0F);
-                RenderSystem.scalef(1.0F, 1.0F, -1.0F);
-                MatrixStack matrixstack = new MatrixStack();
-                matrixstack.translate(0.0D, 0.0D, 1000.0D);
-                matrixstack.scale((float) scale, (float) scale, (float) scale);
-                Quaternion quaternion = Vector3f.ZN.rotationDegrees(175.0F);
-                Quaternion quaternion1 = Vector3f.XP.rotationDegrees(0);
-                quaternion.multiply(quaternion1);
-                matrixstack.rotate(quaternion);
-                BlockRendererDispatcher blockRendererDispatcher = getMinecraft().getBlockRendererDispatcher();
-                quaternion1.conjugate();
-                RenderSystem.runAsFancy(() ->{
-                    blockRendererDispatcher.renderModel(block.getDefaultState(), this.playerInventory.player.getPosition(), this.world, matrixstack, new BufferBuilder(256), false, this.world.rand, EmptyModelData.INSTANCE);
-                });
-                RenderSystem.popMatrix();
-            }
+
+            /*
+            RenderSystem.pushMatrix();
+            RenderSystem.translatef((float) posX, (float) posY, 1050.0F);
+            RenderSystem.scalef(1.0F, 1.0F, -1.0F);
+            MatrixStack matrixstack = new MatrixStack();
+            matrixstack.translate(0.0D, 0.0D, 1000.0D);
+            matrixstack.scale((float) scale, (float) scale, (float) scale);
+            Quaternion quaternion = Vector3f.ZN.rotationDegrees(175.0F);
+            Quaternion quaternion1 = Vector3f.XP.rotationDegrees(0);
+            quaternion.multiply(quaternion1);
+            matrixstack.rotate(quaternion);
+            BlockRendererDispatcher blockRendererDispatcher = getMinecraft().getBlockRendererDispatcher();
+            quaternion1.conjugate();
+            RenderSystem.runAsFancy(() ->{
+                blockRendererDispatcher.renderModel(block.getDefaultState(), this.playerInventory.player.getPosition(), this.world, matrixstack, new BufferBuilder(256), false, this.world.rand);
+            });
+            RenderSystem.popMatrix();
+
+             */
         }
     }
 
     @Override
     protected void init() {
         super.init();
-
-        //TODO: Target Scroll Widget
         getMinecraft().keyboardListener.enableRepeatEvents(true);
 
         this.targetInputField = new TextFieldWidget(this.font, this.guiLeft + 10, this.guiTop + 27, 72, 8, ITextComponent.getTextComponentOrEmpty("Entity Input"));
         this.targetInputField.setMaxStringLength(256);
-        this.targetInputField.setTextColor(0xDDDD44);
+        this.targetInputField.setTextColor(0x888888);
+        this.targetInputField.setText("Target Field");
         addButton(this.targetInputField);
 
         int slotIndex = this.container.inventory.getSlotFor(container.sourceItemStack);
@@ -233,7 +260,7 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
             this.targetInputField.setText("");
             updateWidgets();
         }));
-        this.targetsClearButton.active = true;
+        this.targetsClearButton.active = getStoredTargetSet().size() > 0;
 
         this.targetModeButton = addButton(new Button(this.guiLeft + 6, this.guiTop + 84, 80, 20, currentTargetText(), (button) -> {
             ScannerItem.ScannerMode scannerMode;
@@ -247,6 +274,8 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
             updateWidgets();
         }));
         this.targetModeButton.active = true;
+
+        this.targetList = new ScannerTargetListWidget(this, 156, this.guiLeft + 7, this.guiTop + 110, this.guiTop + 160);
 
     }
 
@@ -266,7 +295,6 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
                 else resourceLocation = new ResourceLocation(inputStringArray[0]);
             } catch (ResourceLocationException ignored){}
             switch (keyCode) {
-                default: updateWidgets();
                 case GLFW.GLFW_KEY_LEFT_SHIFT:
                 case GLFW.GLFW_KEY_LEFT_CONTROL:
                 case GLFW.GLFW_KEY_LEFT_ALT:
@@ -315,13 +343,11 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
                 }
                 case GLFW.GLFW_KEY_TAB: {
                     this.targetInputField.setFocused2(false);
-                    updateWidgets();
                     break;
 
                 }
                 case GLFW.GLFW_KEY_BACKSPACE: {
                     this.targetInputField.deleteFromCursor(-1);
-                    updateWidgets();
                     break;
                 }
             }
@@ -331,16 +357,28 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
-
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        updateWidgets();
+        this.targetList.mouseClicked(mouseX, mouseY, button);
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+        this.targetList.mouseScrolled(mouseX, mouseY, delta * 4);
         return super.mouseScrolled(mouseX, mouseY, delta);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        this.targetList.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        this.targetList.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
@@ -349,7 +387,7 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
         this.font.drawText(matrixStack, ((TextComponent)this.title).setStyle(this.title.getStyle().setUnderlined(true)), (float)this.titleX, (float)this.titleY, 0x404040);
         // Draw entity texts
         if (renderTarget instanceof Entity) {
-            this.font.drawText(matrixStack, ((Entity)renderTarget).getType().getName(), 90, 16, 0xBABABA);
+            this.font.drawText(matrixStack, ((Entity)renderTarget).getDisplayName(), 90, 16, 0xBABABA);
         } else if (renderTarget instanceof Block){
             this.font.drawText(matrixStack, ((Block)renderTarget).getTranslatedName(), 90, 16,  0xBABABA);
         }
@@ -372,6 +410,14 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
         this.renderBackground(matrixStack);
         this.mouseX = mouseX;
         this.mouseY = mouseY;
+        this.targetList.render(matrixStack, mouseX, mouseY, partialTicks);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
     }
+
+    @Override
+    public void tick() {
+        updateWidgets();
+        super.tick();
+    }
+
 }
