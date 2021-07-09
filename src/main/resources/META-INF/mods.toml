@@ -14,7 +14,7 @@ credits="Forge, and the Modding Community!"
 authors = "Cubicpath"
 description = '''
     Random assortment of useful things made by Cubicpath.
-    '''
+'''
 
 [[dependencies.cubicthings]]
 modId = "forge"

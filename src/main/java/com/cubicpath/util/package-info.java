@@ -6,6 +6,6 @@
  * <p>Contains util classes that are project-ambiguous.</p>
  *
  * @author Cubicpath
- * @version 1.2
+ * @version 1.1
  */
 package com.cubicpath.util;

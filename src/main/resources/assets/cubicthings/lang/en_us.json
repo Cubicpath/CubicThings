@@ -14,9 +14,9 @@
 
   "gui.scannerMenu" : "Scanner Menu",
   "gui.scannerMenu.target" : "Target: %s",
-  "gui.scannerMenu.addTarget" : "Add %s",
-  "gui.scannerMenu.removeTarget" : "Remove %s",
-  "gui.scannerMenu.clearTargets" : "Clear %s",
+  "gui.scannerMenu.target.add" : "Add %s",
+  "gui.scannerMenu.target.clear" : "Clear %s",
+  "gui.scannerMenu.target.remove" : "Remove %s",
 
   "item.cubicthings.scanner": "Scanner"
 }

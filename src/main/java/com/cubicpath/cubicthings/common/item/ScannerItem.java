@@ -6,7 +6,6 @@ package com.cubicpath.cubicthings.common.item;
 
 
 import com.cubicpath.cubicthings.common.container.ScannerContainer;
-import com.cubicpath.util.ItemStackHolder;
 import com.cubicpath.util.NBTBuilder;
 import com.cubicpath.util.RayTraceHelper;
 
@@ -139,8 +138,7 @@ public class ScannerItem extends Item implements INamedContainerProvider {
     public boolean onEntitySwing(ItemStack stack, LivingEntity entity) {
         if (entity.isCrouching()) {
             if (entity instanceof ServerPlayerEntity) {
-                ItemStackHolder stackHolder = new ItemStackHolder(stack);
-                NetworkHooks.openGui((ServerPlayerEntity) entity, this, stackHolder::writeToBuffer);
+                NetworkHooks.openGui((ServerPlayerEntity) entity, this, (packetBuffer) -> packetBuffer.writeItemStack(stack));
             }
             return true;
         }
@@ -283,9 +281,9 @@ public class ScannerItem extends Item implements INamedContainerProvider {
                             soundCounter++;
                             final BlockPos posToScan1 = new BlockPos(vector3d.add(x, y, z));
 
-                            if (set.stream().noneMatch(scanContext -> posToScan1 == scanContext.blockPos) && posToScan1.withinDistance(vector3d, (float)this.maxScanDistance / 2)) {
+                            if (set.stream().noneMatch(scanContext -> scanContext.blockPos == posToScan) && posToScan1.withinDistance(vector3d, (float)this.maxScanDistance / 2)) {
                                 float soundDivider = ((float)traceContext.eyePosition.squareDistanceTo(posToScan1.getX(), posToScan1.getY(), posToScan1.getZ()) / 2) / ((float)posToScan1.distanceSq(vector3d, true) / this.scanWidth);
-                                set.add(new ScanContext(worldIn, posToScan1, soundCounter <= soundLimit ? (0.25F / soundDivider) : null, 5.0F));
+                                set.add(new ScanContext(worldIn, posToScan1, soundCounter >= soundLimit ? (0.25F / soundDivider) : null, 5.0F));
                             }
                         }
                     }
