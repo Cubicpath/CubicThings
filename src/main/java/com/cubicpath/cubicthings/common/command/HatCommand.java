@@ -49,7 +49,7 @@ public class HatCommand {
             if (!entity.isEntityEqual(context.getSource().assertIsEntity())) throw new CommandException(new TranslationTextComponent("commands.hat.failure.permission"));
             if (entity instanceof LivingEntity && !stack.isEmpty()){
                 if (!((LivingEntity) entity).getItemStackFromSlot(EquipmentSlotType.HEAD).isEmpty()){
-                    new ItemEntity(entity.world, entity.getPosX(), entity.getPosYEye(), entity.getPosZ(), ((LivingEntity) entity).getItemStackFromSlot(EquipmentSlotType.HEAD));
+                    entity.world.addEntity(new ItemEntity(entity.world, entity.getPosX(), entity.getPosYEye(), entity.getPosZ(), ((LivingEntity) entity).getItemStackFromSlot(EquipmentSlotType.HEAD)));
                     entity.world.playSound(entity instanceof PlayerEntity ? (PlayerEntity)entity : null, entity.getPosition(), SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.NEUTRAL, 1.0F, (entity.world.rand.nextFloat() - entity.world.rand.nextFloat()) * 0.4F + 1.0F);
                 }
                 entity.setItemStackToSlot(EquipmentSlotType.HEAD, stack);

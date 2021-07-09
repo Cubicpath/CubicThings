@@ -6,9 +6,12 @@ package com.cubicpath.cubicthings;
 
 import com.cubicpath.cubicthings.core.init.*;
 
+import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.*;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
@@ -22,6 +25,24 @@ import org.apache.logging.log4j.Logger;
 @Mod(CubicThings.MODID)
 @EventBusSubscriber(modid = CubicThings.MODID, bus = EventBusSubscriber.Bus.MOD)
 public final class CubicThings {
+    public static class Config {
+        private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
+        public static final ForgeConfigSpec SPEC;
+        public static final ForgeConfigSpec.ConfigValue<String> stringValue;
+        public static final ForgeConfigSpec.ConfigValue<Integer> integerValue;
+        public static final ForgeConfigSpec.ConfigValue<Double> doubleValue;
+
+        static {
+            BUILDER.push("Config for " + CubicThings.MODNAME);
+            stringValue = BUILDER.define("stringValue", "Value");
+            integerValue = BUILDER.define("integerValue", 0);
+            doubleValue = BUILDER.define("doubleValue", 1.000D);
+
+            BUILDER.pop();
+            SPEC = BUILDER.build();
+        }
+    }
+
     public static final Logger LOGGER = LogManager.getLogger();
 
     /** Same as mods.toml modid. */
@@ -32,6 +53,7 @@ public final class CubicThings {
     public static final String MCVER = "1.16.5";
 
     public CubicThings() {
+        final ModLoadingContext modLoadingContext = ModLoadingContext.get();
         final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         // Event Listeners
@@ -51,6 +73,8 @@ public final class CubicThings {
         CommandInit.registerCommands(); LOGGER.info("Commands Registered");
         NetworkInit.registerPackets(); LOGGER.info("Network logic Registered");
 
+        modLoadingContext.registerConfig(ModConfig.Type.COMMON, Config.SPEC, MODID + "-common.toml");
+        //modLoadingContext.getActiveContainer().registerExtensionPoint(ExtensionPoint.CONFIGGUIFACTORY, );
     }
 
     // FML Setup Events
@@ -65,6 +89,5 @@ public final class CubicThings {
     private void processIMC(final InterModProcessEvent event) {
         LOGGER.info("Process IMC Event...");
     }
-
 
 }

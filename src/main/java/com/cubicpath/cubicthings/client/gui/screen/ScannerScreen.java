@@ -16,26 +16,23 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.entity.player.RemoteClientPlayerEntity;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.list.ExtendedList;
-import net.minecraft.client.renderer.BlockRendererDispatcher;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Pose;
-import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.ResourceLocationException;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Quaternion;
 import net.minecraft.util.math.vector.Vector3f;
@@ -66,15 +63,11 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
 
     protected boolean clickedTargetField = false;
     protected float renderYaw = 0.0F;
-    protected int mouseX;
-    protected int mouseY;
+    protected int mouseX, mouseY;
 
     protected final ItemStack itemStack;
     protected final ClientWorld world;
-    protected Button targetAddButton;
-    protected Button targetRemoveButton;
-    protected Button targetsClearButton;
-    protected Button targetModeButton;
+    protected Button targetAddButton, targetRemoveButton, targetsClearButton, targetModeButton;
     protected TextFieldWidget targetInputField;
     protected ScannerTargetListWidget targetList;
 
@@ -119,11 +112,39 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
 
     public void updateWidgets(){
         boolean validInput = !this.targetInputField.getText().trim().isEmpty() && ResourceLocation.isResouceNameValid(this.targetInputField.getText().toLowerCase().trim());
+        ResourceLocation resourceLocation = validInput ? new ResourceLocation(this.targetInputField.getText().toLowerCase().trim()) : null;
 
         if (!this.clickedTargetField && this.targetInputField.isFocused()) {
             this.targetInputField.setText("");
             this.targetInputField.setTextColor(0xDDDD44);
             this.clickedTargetField = true;
+        }
+
+        switch (getScannerMode()){
+            case BLOCKS: {
+                Block block = ForgeRegistries.BLOCKS.getValue(resourceLocation);
+                if (block != null){
+                    renderTarget = block;
+                } else renderTarget = Blocks.AIR;
+
+                break;
+            }
+
+            case BIOMES:
+                break;
+
+            case ENTITIES: {
+                EntityType<?> entityType = ForgeRegistries.ENTITIES.getValue(resourceLocation);
+                if (entityType != null && resourceLocation != null) {
+                    Entity newEntity = entityType.create(this.world);
+
+                    if (resourceLocation.getNamespace().equals("minecraft") && resourceLocation.getPath().equals("player"))
+                        renderTarget = createNewDummyPlayer(this.world);
+                    else if (newEntity instanceof LivingEntity)
+                        renderTarget = newEntity;
+                } else renderTarget = EntityType.ITEM;
+                break;
+            }
         }
 
         this.targetAddButton.setMessage(new TranslationTextComponent("gui.scannerMenu.target.add", getScannerMode().toTitleCase().replace("ies", "y").concat("\t").replace("s\t", "").trim()));
@@ -141,6 +162,7 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
     //uses net.minecraft.client.gui.screen.inventory::drawEntityOnScreen math
     public void drawTargetOnScreen(int posX, int posY, int scale) {
         //TODO: Render preview for Blocks
+        //TODO: Render preview for Biomes
 
         this.renderYaw = this.renderYaw + 0.015F;
         if (renderTarget instanceof Entity) {
@@ -191,29 +213,8 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
         }
         else if (renderTarget instanceof Block) {
             Block block = (Block)renderTarget;
-            renderTarget = new ItemEntity(this.world, 0, 0, 0, block.asItem().getDefaultInstance());
-            drawTargetOnScreen(posX, posY, scale);
 
-
-            /*
-            RenderSystem.pushMatrix();
-            RenderSystem.translatef((float) posX, (float) posY, 1050.0F);
-            RenderSystem.scalef(1.0F, 1.0F, -1.0F);
-            MatrixStack matrixstack = new MatrixStack();
-            matrixstack.translate(0.0D, 0.0D, 1000.0D);
-            matrixstack.scale((float) scale, (float) scale, (float) scale);
-            Quaternion quaternion = Vector3f.ZN.rotationDegrees(175.0F);
-            Quaternion quaternion1 = Vector3f.XP.rotationDegrees(0);
-            quaternion.multiply(quaternion1);
-            matrixstack.rotate(quaternion);
-            BlockRendererDispatcher blockRendererDispatcher = getMinecraft().getBlockRendererDispatcher();
-            quaternion1.conjugate();
-            RenderSystem.runAsFancy(() ->{
-                blockRendererDispatcher.renderModel(block.getDefaultState(), this.playerInventory.player.getPosition(), this.world, matrixstack, new BufferBuilder(256), false, this.world.rand);
-            });
-            RenderSystem.popMatrix();
-
-             */
+            getMinecraft().getItemRenderer().renderItemAndEffectIntoGUI(block.asItem().getDefaultInstance(),this.guiLeft + 120, this.guiTop + 55);
         }
     }
 
@@ -275,7 +276,7 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
         }));
         this.targetModeButton.active = true;
 
-        this.targetList = new ScannerTargetListWidget(this, 156, this.guiLeft + 7, this.guiTop + 110, this.guiTop + 160);
+        this.targetList = new ScannerTargetListWidget(this, 156, this.guiLeft + 7, this.guiTop + 109, this.guiTop + 159);
 
     }
 
@@ -288,12 +289,6 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (this.targetInputField.isFocused() && this.targetInputField.getVisible()){
-            ResourceLocation resourceLocation = new ResourceLocation("minecraft:player");
-            String[] inputStringArray = this.targetInputField.getText().toLowerCase().split(":", 1);
-            try {
-                if (inputStringArray.length > 1) resourceLocation = new ResourceLocation(inputStringArray[0], inputStringArray[1]);
-                else resourceLocation = new ResourceLocation(inputStringArray[0]);
-            } catch (ResourceLocationException ignored){}
             switch (keyCode) {
                 case GLFW.GLFW_KEY_LEFT_SHIFT:
                 case GLFW.GLFW_KEY_LEFT_CONTROL:
@@ -312,33 +307,7 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
                     break;
                 }
                 case GLFW.GLFW_KEY_ENTER: {
-                    switch (getScannerMode()){
-                        case BLOCKS: {
-                            Block block = ForgeRegistries.BLOCKS.getValue(resourceLocation);
-                            if (block != null){
-                                renderTarget = block;
-                            }
 
-                            break;
-                        }
-
-                        case BIOMES:
-                            break;
-
-                        case ENTITIES: {
-                            EntityType<?> entityType = ForgeRegistries.ENTITIES.getValue(resourceLocation);
-                            if (entityType != null) {
-                                Entity newEntity = entityType.create(this.world);
-
-                                if (resourceLocation.getNamespace().equals("minecraft") && resourceLocation.getPath().equals("player"))
-                                    renderTarget = createNewDummyPlayer(this.world);
-                                else if (newEntity instanceof LivingEntity)
-                                    renderTarget = newEntity;
-
-                            }
-                            break;
-                        }
-                    }
 
                 }
                 case GLFW.GLFW_KEY_TAB: {
@@ -400,8 +369,9 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
         Objects.requireNonNull(this.minecraft, "Minecraft cannot be null.").getTextureManager().bindTexture(SCANNER_SCREEN_TEXTURE);
         this.blit(matrixStack, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
         if (renderTarget instanceof Entity)
-            this.drawTargetOnScreen(this.guiLeft + 127, this.guiTop + 98, (int) MathHelper.clamp(this.ySize / Math.max(((Entity)renderTarget).getSize(Pose.STANDING).width * 3, ((Entity)renderTarget).getSize(Pose.STANDING).height * 3), this.ySize / 10.0F, this.ySize / 4.0F));
-
+            drawTargetOnScreen(this.guiLeft + 127, this.guiTop + 98, (int) MathHelper.clamp(this.ySize / Math.max(((Entity)renderTarget).getSize(Pose.STANDING).width * 3, ((Entity)renderTarget).getSize(Pose.STANDING).height * 3), this.ySize / 10.0F, this.ySize / 4.0F));
+        if (renderTarget instanceof Block)
+            drawTargetOnScreen(this.guiLeft + 127, this.guiTop + 98, 1);
     }
 
     @Override
