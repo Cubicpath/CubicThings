@@ -19,37 +19,47 @@ public class CScannerTargetPacket extends ModPacket {
     private static final NetworkDirection DIRECTION = NetworkDirection.PLAY_TO_SERVER;
     private final String scanTarget;
     private final int slotIndex;
-    private final boolean remove;
+    private final byte flag;
 
     public CScannerTargetPacket(PacketBuffer buf) {
         super(buf);
         this.scanTarget = buf.readString(32767);
         this.slotIndex = buf.readInt();
-        this.remove = buf.readBoolean();
+        this.flag = buf.readByte();
     }
 
     /** External packet creation. */
-    public CScannerTargetPacket(String scanTarget, int slotIndex, boolean remove) {
+    public CScannerTargetPacket(String scanTarget, int slotIndex, byte flag) {
         this.scanTarget = scanTarget;
         this.slotIndex = slotIndex;
-        this.remove = remove;
+        this.flag = flag;
     }
 
     public void encode(PacketBuffer buf) {
         buf.writeString(this.scanTarget);
         buf.writeInt(this.slotIndex);
-        buf.writeBoolean(this.remove);
+        buf.writeByte(this.flag);
     }
 
     public void handle(Supplier<NetworkEvent.Context> context) {
         context.get().enqueueWork(() -> {
             ServerPlayerEntity player = context.get().getSender();
             ItemStack stack = Objects.requireNonNull(player, "Sender cannot be null.").inventory.getStackInSlot(this.slotIndex);
+            ScannerItem.ScannerMode scannerMode = ScannerItem.getScannerMode(stack);
             if (stack.getItem() instanceof ScannerItem){
-                if (this.remove) {
-                    ScannerItem.removeTarget(stack, ScannerItem.getScannerMode(stack), this.scanTarget);
-                } else {
-                    ScannerItem.addTarget(stack, ScannerItem.getScannerMode(stack), this.scanTarget);
+                switch(this.flag){
+                    case 1: {
+                        ScannerItem.addTarget(stack, scannerMode, this.scanTarget);
+                        break;
+                    }
+                    case 2: {
+                        ScannerItem.removeTarget(stack, scannerMode, this.scanTarget);
+                        break;
+                    }
+                    case 3: {
+                        scannerMode.getTargetList(stack).forEach((stringNBT) -> ScannerItem.removeTarget(stack, scannerMode, stringNBT.getString()));
+                        break;
+                    }
                 }
             }
         });

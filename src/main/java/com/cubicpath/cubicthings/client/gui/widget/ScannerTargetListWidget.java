@@ -22,7 +22,8 @@ public class ScannerTargetListWidget extends ExtendedList<ScannerTargetListWidge
         this.left = left;
         this.listWidth = listWidth;
         this.parent = parent;
-        this.refreshList();
+        setLeftPos(left); // Fixes bug where text is rendered on the far left of the screen
+        refreshList();
     }
 
     @Override
@@ -52,7 +53,7 @@ public class ScannerTargetListWidget extends ExtendedList<ScannerTargetListWidge
     @ParametersAreNonnullByDefault
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         super.render(matrixStack, mouseX, mouseY, partialTicks);
-        this.setLeftPos(this.left);
+        setLeftPos(left);
     }
 
     public static class TargetEntry extends ExtendedList.AbstractListEntry<ScannerTargetListWidget.TargetEntry>{

@@ -15,11 +15,12 @@
   "enchantment.cubicthings.multistep": "Multistep",
   "enchantment.cubicthings.multimine": "Multimine",
 
-  "gui.scannerMenu" : "Scanner Menu",
-  "gui.scannerMenu.target" : "Target: %s",
-  "gui.scannerMenu.target.add" : "Add %s",
-  "gui.scannerMenu.target.clear" : "Clear %s",
-  "gui.scannerMenu.target.remove" : "Remove %s",
+  "gui.cubicthings.configMenu.title" : "Config Menu",
+  "gui.cubicthings.scannerMenu.title" : "Scanner Menu",
+  "gui.cubicthings.scannerMenu.target" : "Target: %s",
+  "gui.cubicthings.scannerMenu.add" : "Add %s",
+  "gui.cubicthings.scannerMenu.clear" : "Clear %s",
+  "gui.cubicthings.scannerMenu.remove" : "Remove %s",
 
   "item.cubicthings.scanner": "Scanner"
 }

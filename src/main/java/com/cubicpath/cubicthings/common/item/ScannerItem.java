@@ -5,6 +5,7 @@
 package com.cubicpath.cubicthings.common.item;
 
 
+import com.cubicpath.cubicthings.CubicThings;
 import com.cubicpath.cubicthings.common.container.ScannerContainer;
 import com.cubicpath.util.NBTBuilder;
 import com.cubicpath.util.RayTraceHelper;
@@ -32,6 +33,7 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.network.NetworkHooks;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -47,19 +49,19 @@ public class ScannerItem extends Item implements INamedContainerProvider {
         BIOMES(KEY_TARGETS_BIOME,  8),
         ENTITIES(KEY_TARGETS_ENTITY,  8);
 
-        public final String listName;
-        public final int listType;
+        public final String nbtName;
+        public final int nbtType;
 
-        ScannerMode(String listName, int listType){
-            this.listName = listName;
-            this.listType = listType;
+        ScannerMode(String nbtName, int nbtType){
+            this.nbtName = nbtName;
+            this.nbtType = nbtType;
         }
 
-        public ListNBT getTargetList(ItemStack scanner){
-            CompoundNBT compoundnbt = scanner.getOrCreateTag();
-            if (!compoundnbt.contains(this.listName))
-                compoundnbt.put(this.listName, new ListNBT());
-            return compoundnbt.getList(this.listName, this.listType);
+        public ListNBT getTargetList(ItemStack stack){
+            CompoundNBT compoundnbt = stack.getOrCreateTag();
+            if (!compoundnbt.contains(this.nbtName))
+                compoundnbt.put(this.nbtName, new ListNBT());
+            return compoundnbt.getList(this.nbtName, this.nbtType);
         }
 
         public String toTitleCase() {
@@ -69,7 +71,7 @@ public class ScannerItem extends Item implements INamedContainerProvider {
         }
     }
 
-    public static class ScanContext {
+    protected static class ScanContext {
         public final World world;
         public final BlockPos blockPos;
         public final Float scanVolume;
@@ -84,17 +86,20 @@ public class ScannerItem extends Item implements INamedContainerProvider {
 
     }
 
+    //TODO: Make biome scanner mode
+
     public static final String KEY_MODE = "ScannerMode"; // String NBT
     public static final String KEY_TARGETS_BLOCK = "BlockTargets"; // List NBT
     public static final String KEY_TARGETS_BIOME = "BiomeTargets"; // List NBT
     public static final String KEY_TARGETS_ENTITY = "EntityTargets"; // List NBT
+    private static final int SOUND_LIMIT = 100;
     public final int maxScanDistance;
     public final int scanWidth;
 
 
     /** Return the {@linkplain #KEY_MODE} NBT value. */
-    public static ScannerMode getScannerMode(ItemStack scanner) {
-        CompoundNBT compoundnbt = scanner.getOrCreateTag();
+    public static ScannerMode getScannerMode(ItemStack stack) {
+        CompoundNBT compoundnbt = stack.getOrCreateTag();
         if (!compoundnbt.contains(KEY_MODE)) compoundnbt.putString(KEY_MODE, "Blocks");
         if (!compoundnbt.getString(KEY_MODE).isEmpty())
             return ScannerMode.valueOf(compoundnbt.getString(KEY_MODE).toUpperCase());
@@ -102,13 +107,13 @@ public class ScannerItem extends Item implements INamedContainerProvider {
     }
 
     /** Set the {@linkplain #KEY_MODE} NBT value to a given ScannerMode value. */
-    public static void setScannerMode(ItemStack scanner, ScannerMode mode) {
-        new NBTBuilder(scanner.getOrCreateTag())
+    public static void setScannerMode(ItemStack stack, ScannerMode mode) {
+        new NBTBuilder(stack.getOrCreateTag())
                 .putString(KEY_MODE, mode.toTitleCase());
     }
 
-    public static void addTarget(ItemStack scanner, ScannerMode mode, String string){
-        ListNBT targetList = mode.getTargetList(scanner);
+    public static void addTarget(ItemStack stack, ScannerMode mode, String string){
+        ListNBT targetList = mode.getTargetList(stack);
         StringNBT stringNBT = StringNBT.valueOf(string);
 
         if (!targetList.contains(stringNBT)) {
@@ -116,19 +121,19 @@ public class ScannerItem extends Item implements INamedContainerProvider {
         }
     }
 
-    public static void removeTarget(ItemStack scanner, ScannerMode mode, String string){
-        ListNBT targetList = mode.getTargetList(scanner);
+    public static void removeTarget(ItemStack stack, ScannerMode mode, String string){
+        ListNBT targetList = mode.getTargetList(stack);
         StringNBT stringNBT = StringNBT.valueOf(string);
 
         targetList.remove(stringNBT);
     }
 
-    public static void setupNBT(ItemStack scanner){
-        new NBTBuilder(scanner.getOrCreateTag())
+    public static void setupNBT(ItemStack stack){
+        new NBTBuilder(stack.getOrCreateTag())
                 .putString(KEY_MODE, ScannerMode.BLOCKS.toTitleCase())
-                .put(ScannerMode.BLOCKS.listName, new ListNBT())
-                .put(ScannerMode.BIOMES.listName, new ListNBT())
-                .put(ScannerMode.ENTITIES.listName, new ListNBT());
+                .put(ScannerMode.BLOCKS.nbtName, new ListNBT())
+                .put(ScannerMode.BIOMES.nbtName, new ListNBT())
+                .put(ScannerMode.ENTITIES.nbtName, new ListNBT());
     }
 
     public ScannerItem(Properties properties, int maxScanDistance, int scanWidth) {
@@ -156,7 +161,7 @@ public class ScannerItem extends Item implements INamedContainerProvider {
         final ItemStack itemStack = playerIn.getHeldItem(handIn);
         final ScannerMode mode = getScannerMode(itemStack);
         final ListNBT targetNBT = mode.getTargetList(itemStack);
-        Boolean[] scanResults = new Boolean[0];
+        Boolean[] scanResults;
         ActionResult<ItemStack> actionResult;
 
         switch (mode){
@@ -180,7 +185,25 @@ public class ScannerItem extends Item implements INamedContainerProvider {
 
             }
 
-            case BIOMES: break;
+            case BIOMES: {
+                final Biome[] biomeTargets = new Biome[targetNBT.size()];
+                for (int i = 0; i < targetNBT.size(); i++) {
+                    biomeTargets[i] = ForgeRegistries.BIOMES.getValue(ResourceLocation.tryCreate(targetNBT.getString(i)));
+                }
+
+                //scans server-side only
+                if (!worldIn.isRemote()){
+                    CubicThings.LOGGER.info("Test Biome Scan");
+                }
+
+                int i = 0;
+                scanResults = new Boolean[blockPosToScan.size()];
+                for (ScanContext scanContext : blockPosToScan) {
+                    scanResults[i++] = scanForBiomes(scanContext.world, playerIn, scanContext.blockPos, biomeTargets, scanContext.scanVolume, scanContext.scanPitch);
+                }
+
+
+            }
 
             case ENTITIES: {
                 final EntityType<?>[] entityTargets = new EntityType<?>[targetNBT.size()];
@@ -233,6 +256,11 @@ public class ScannerItem extends Item implements INamedContainerProvider {
         return false;
     }
 
+    public static boolean scanForBiomes(World world, LivingEntity scanner, BlockPos pos, Biome[] blocks, @Nullable Float volume, float pitch) {
+        return false;
+    }
+
+
     /**
      * Scan a 1x1 area for {@linkplain net.minecraft.entity.Entity Entities} at {@linkplain BlockPos} {@code pos}. If the {@linkplain EntityType} value of the entity scanned is in the
      * {@code entityTypes} EntityType<?> array, play a sound and return true. Ignores the entity that started scanning.
@@ -266,13 +294,12 @@ public class ScannerItem extends Item implements INamedContainerProvider {
      * @param worldIn World to scan
      */
     public void markPosToScan(Set<ScanContext> set, LivingEntity entityIn, World worldIn){
-        final int soundLimit = 100;
         final int worldHeight = worldIn.getHeight();
         final int worldDepth = 0;
         final RayTraceHelper.LookingAtContext traceContext = new RayTraceHelper.LookingAtContext(entityIn, maxScanDistance);
 
-        for (int i = 0; i < traceContext.eyePosition.distanceTo(traceContext.eyeLookingTo); i++) {
-            Vector3d vector3d = traceContext.eyePosition.add(new Vector3d(traceContext.xAngle * i, traceContext.yAngle * i, traceContext.zAngle * i));
+        for (int blockDistance = 0; blockDistance < traceContext.eyePosition.distanceTo(traceContext.eyeLookingTo); blockDistance++) {
+            Vector3d vector3d = traceContext.eyePosition.add(new Vector3d(traceContext.xAngle * blockDistance, traceContext.yAngle * blockDistance, traceContext.zAngle * blockDistance));
             final BlockPos posToScan = new BlockPos(vector3d);
             if (posToScan.getY() >= worldDepth && posToScan.getY() <= worldHeight) {
                 set.add(new ScanContext(worldIn, posToScan,1.0F / ((float)traceContext.eyePosition.squareDistanceTo(vector3d) / 2), 5.0F));
@@ -286,13 +313,19 @@ public class ScannerItem extends Item implements INamedContainerProvider {
 
                             if (set.stream().noneMatch(scanContext -> scanContext.blockPos == posToScan) && posToScan1.withinDistance(vector3d, (float)this.maxScanDistance / 2)) {
                                 float soundDivider = ((float)traceContext.eyePosition.squareDistanceTo(posToScan1.getX(), posToScan1.getY(), posToScan1.getZ()) / 2) / ((float)posToScan1.distanceSq(vector3d, true) / this.scanWidth);
-                                set.add(new ScanContext(worldIn, posToScan1, soundCounter >= soundLimit ? (0.25F / soundDivider) : null, 5.0F));
+                                set.add(new ScanContext(worldIn, posToScan1, soundCounter >= SOUND_LIMIT ? (0.25F / soundDivider) : null, 5.0F));
                             }
                         }
                     }
                 }
             }
         }
+    }
+
+    public void markChunkToScan(Set<ScanContext> set, LivingEntity entityIn, World worldIn){
+        final RayTraceHelper.LookingAtContext traceContext = new RayTraceHelper.LookingAtContext(entityIn, maxScanDistance);
+
+
     }
 
     @Override
@@ -321,7 +354,7 @@ public class ScannerItem extends Item implements INamedContainerProvider {
     @Override
     @Nonnull
     public ITextComponent getDisplayName() {
-        return new TranslationTextComponent("gui.scannerMenu");
+        return new TranslationTextComponent("gui.cubicthings.scannerMenu.title");
     }
 
     @Override

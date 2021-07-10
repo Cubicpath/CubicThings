@@ -4,10 +4,12 @@
 
 package com.cubicpath.cubicthings;
 
+import com.cubicpath.cubicthings.client.gui.screen.ConfigScreen;
 import com.cubicpath.cubicthings.core.init.*;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -34,9 +36,10 @@ public final class CubicThings {
 
         static {
             BUILDER.push("Config for " + CubicThings.MODNAME);
-            stringValue = BUILDER.define("stringValue", "Value");
-            integerValue = BUILDER.define("integerValue", 0);
-            doubleValue = BUILDER.define("doubleValue", 1.000D);
+
+            stringValue = BUILDER.comment("This is a String value. It has quotation marks.").define("stringValue", "Value");
+            integerValue = BUILDER.comment("This is an Integer value. It is a whole number.").define("integerValue", 0);
+            doubleValue = BUILDER.comment("This is a double value. It has decimals.").define("doubleValue", 1.000D);
 
             BUILDER.pop();
             SPEC = BUILDER.build();
@@ -74,7 +77,7 @@ public final class CubicThings {
         NetworkInit.registerPackets(); LOGGER.info("Network logic Registered");
 
         modLoadingContext.registerConfig(ModConfig.Type.COMMON, Config.SPEC, MODID + "-common.toml");
-        //modLoadingContext.getActiveContainer().registerExtensionPoint(ExtensionPoint.CONFIGGUIFACTORY, );
+        modLoadingContext.getActiveContainer().registerExtensionPoint(ExtensionPoint.CONFIGGUIFACTORY, () -> (__, screen) -> new ConfigScreen(screen));
     }
 
     // FML Setup Events
