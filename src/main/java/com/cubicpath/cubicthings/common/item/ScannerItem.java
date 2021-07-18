@@ -39,7 +39,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
 
 public class ScannerItem extends Item implements INamedContainerProvider {
@@ -155,7 +154,6 @@ public class ScannerItem extends Item implements INamedContainerProvider {
 
     @Override
     @Nonnull
-    @ParametersAreNonnullByDefault
     public ActionResult<ItemStack> onItemRightClick(World worldIn, PlayerEntity playerIn, Hand handIn) {
         final HashSet<ScanContext> blockPosToScan = new HashSet<>();
         final ItemStack itemStack = playerIn.getHeldItem(handIn);
@@ -329,7 +327,6 @@ public class ScannerItem extends Item implements INamedContainerProvider {
     }
 
     @Override
-    @ParametersAreNonnullByDefault
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
     }
@@ -343,7 +340,6 @@ public class ScannerItem extends Item implements INamedContainerProvider {
     }
 
     @Override
-    @ParametersAreNonnullByDefault
     public void fillItemGroup(ItemGroup group, NonNullList<ItemStack> items) {
         if (this.isInGroup(group)) {
             items.add(this.getDefaultInstance());
@@ -352,14 +348,12 @@ public class ScannerItem extends Item implements INamedContainerProvider {
 
     /** Container name for Scanner menu. */
     @Override
-    @Nonnull
     public ITextComponent getDisplayName() {
         return new TranslationTextComponent("gui.cubicthings.scannerMenu.title");
     }
 
     @Override
     @Nullable
-    @ParametersAreNonnullByDefault
     public Container createMenu(int windowId, PlayerInventory inv, PlayerEntity player) {
         return new ScannerContainer(windowId, inv, null);
     }

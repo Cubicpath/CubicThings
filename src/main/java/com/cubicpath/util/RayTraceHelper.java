@@ -37,6 +37,7 @@ public class RayTraceHelper {
         public final float yawCos;
         public final float yawSin;
         public final float pitchCos;
+        public final float pitchSin;
         public final float xAngle;
         public final float yAngle;
         public final float zAngle;
@@ -50,8 +51,9 @@ public class RayTraceHelper {
             this.yawCos = MathHelper.cos(-yaw * ((float)Math.PI / 180F) - (float)Math.PI);
             this.yawSin = MathHelper.sin(-yaw * ((float)Math.PI / 180F) - (float)Math.PI);
             this.pitchCos = MathHelper.cos(-pitch * ((float)Math.PI / 180F));
+            this.pitchSin = MathHelper.sin(-pitch * ((float)Math.PI / 180F));
             this.xAngle = yawSin * -pitchCos;
-            this.yAngle = MathHelper.sin(-pitch * ((float)Math.PI / 180F));
+            this.yAngle = pitchSin;
             this.zAngle = yawCos * -pitchCos;
             this.eyePosition = entityIn.getEyePosition(1.0F);
             this.eyeLookingTo = eyePosition.add((double)xAngle * maxDistance, (double)yAngle * maxDistance, (double)zAngle * maxDistance);

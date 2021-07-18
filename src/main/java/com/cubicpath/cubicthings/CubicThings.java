@@ -27,22 +27,25 @@ import org.apache.logging.log4j.Logger;
 @Mod(CubicThings.MODID)
 @EventBusSubscriber(modid = CubicThings.MODID, bus = EventBusSubscriber.Bus.MOD)
 public final class CubicThings {
+    /**
+     * Contains changeable values stored in a config file.
+     *
+     * @see ForgeConfigSpec
+     */
     public static class Config {
-        private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
         public static final ForgeConfigSpec SPEC;
         public static final ForgeConfigSpec.ConfigValue<String> stringValue;
         public static final ForgeConfigSpec.ConfigValue<Integer> integerValue;
         public static final ForgeConfigSpec.ConfigValue<Double> doubleValue;
 
         static {
-            BUILDER.push("Config for " + CubicThings.MODNAME);
+            ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 
-            stringValue = BUILDER.comment("This is a String value. It has quotation marks.").define("stringValue", "Value");
-            integerValue = BUILDER.comment("This is an Integer value. It is a whole number.").define("integerValue", 0);
-            doubleValue = BUILDER.comment("This is a double value. It has decimals.").define("doubleValue", 1.000D);
+            stringValue = builder.comment("This is a String value. It has quotation marks.").translation("config.cubicthings.stringValue").define("stringValue", "Value");
+            integerValue = builder.comment("This is an Integer value. It is a whole number.").translation("config.cubicthings.integerValue").define("integerValue", 0);
+            doubleValue = builder.comment("This is a double value. It has decimals.").translation("config.cubicthings.doubleValue").define("doubleValue", 1.000D);
 
-            BUILDER.pop();
-            SPEC = BUILDER.build();
+            SPEC = builder.build();
         }
     }
 

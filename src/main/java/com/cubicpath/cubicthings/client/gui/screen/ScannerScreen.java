@@ -5,7 +5,7 @@
 package com.cubicpath.cubicthings.client.gui.screen;
 
 import com.cubicpath.cubicthings.CubicThings;
-import com.cubicpath.cubicthings.client.gui.widget.ScannerTargetListWidget;
+import com.cubicpath.cubicthings.client.gui.widget.TextListWidget;
 import com.cubicpath.cubicthings.common.container.ScannerContainer;
 import com.cubicpath.cubicthings.common.item.ScannerItem;
 import com.cubicpath.cubicthings.common.network.CScannerModePacket;
@@ -45,7 +45,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -57,7 +56,7 @@ import java.util.function.Function;
  * @author Cubicpath
  */
 @SuppressWarnings("deprecation")
-public class ScannerScreen extends ContainerScreen<ScannerContainer> {
+public class ScannerScreen extends ContainerScreen<ScannerContainer> implements ITextListHolder {
     /** The location of the inventory background texture */
     protected static final ResourceLocation SCANNER_SCREEN_TEXTURE = new ResourceLocation(CubicThings.MODID, "textures/gui/container/scanner.png");
 
@@ -73,7 +72,7 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
     protected final ClientWorld world;
     protected Button targetAddButton, targetRemoveButton, targetsClearButton, targetModeButton;
     protected TextFieldWidget targetInputField;
-    protected ScannerTargetListWidget targetList;
+    protected TextListWidget targetList;
 
     public ScannerScreen(ScannerContainer screenContainer, PlayerInventory inventory, ITextComponent titleIn) {
         super(screenContainer, inventory, titleIn);
@@ -109,7 +108,7 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
         return this.font;
     }
 
-    public <T extends ExtendedList.AbstractListEntry<T>> void buildTargetList(Consumer<T> targetListViewConsumer, Function<String, T> newEntry) {
+    public <T extends ExtendedList.AbstractListEntry<T>> void buildTextList(Consumer<T> targetListViewConsumer, Function<String, T> newEntry) {
         getStoredTargetSet().stream().sorted().forEach(string -> targetListViewConsumer.accept(newEntry.apply(string)));
     }
 
@@ -238,9 +237,9 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
         addButton(this.targetInputField);
 
         int slotIndex = this.container.inventory.getSlotFor(container.sourceItemStack);
-        String input = new ResourceLocation(this.targetInputField.getText().toLowerCase().replace(" ","")).toString();
 
         this.targetAddButton = addButton(new Button(this.guiLeft + 8, this.guiTop + 40, 76, 14, new TranslationTextComponent("gui.cubicthings.scannerMenu.add", getScannerMode().toTitleCase().replace("ies", "y").concat("\t").replace("s\t", "").trim()), (button) -> {
+            String input = new ResourceLocation(this.targetInputField.getText().toLowerCase().replace(" ","")).toString();
             NetworkInit.PACKET_HANDLER.sendToServer(new CScannerTargetPacket(input, slotIndex, (byte) 1));
             ScannerItem.addTarget(this.itemStack, this.getScannerMode(), input);
             updateWidgets();
@@ -251,6 +250,7 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
         this.targetAddButton.active = false;
 
         this.targetRemoveButton = addButton(new Button(this.guiLeft + 8, this.guiTop + 52, 76, 14, new TranslationTextComponent("gui.cubicthings.scannerMenu.remove", getScannerMode().toTitleCase().replace("ies", "y").concat("\t").replace("s\t", "").trim()), (button) -> {
+            String input = new ResourceLocation(this.targetInputField.getText().toLowerCase().replace(" ","")).toString();
             NetworkInit.PACKET_HANDLER.sendToServer(new CScannerTargetPacket(input, slotIndex, (byte) 2));
             ScannerItem.removeTarget(this.itemStack, this.getScannerMode(), input);
             updateWidgets();
@@ -261,10 +261,12 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
         this.targetRemoveButton.active = false;
 
         this.targetsClearButton = addButton(new Button(this.guiLeft + 8, this.guiTop + 66, 76, 14, new TranslationTextComponent("gui.cubicthings.scannerMenu.clear", getScannerMode().toTitleCase()), (button) -> {
+            String input = new ResourceLocation(this.targetInputField.getText().toLowerCase().replace(" ","")).toString();
             NetworkInit.PACKET_HANDLER.sendToServer(new CScannerTargetPacket(input, slotIndex, (byte) 3));
-            ScannerItem.removeTarget(this.itemStack, this.getScannerMode(), input);
-            this.targetInputField.setText("");
+            getScannerMode().getTargetList(this.itemStack).clear();
             updateWidgets();
+
+            this.targetInputField.setText("");
         }));
         this.targetsClearButton.active = getStoredTargetSet().size() > 0;
 
@@ -281,7 +283,7 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
         }));
         this.targetModeButton.active = true;
 
-        this.targetList = new ScannerTargetListWidget(this, 156, this.guiLeft + 7, this.guiTop + 109, this.guiTop + 159);
+        this.targetList = new TextListWidget(this, 156, this.guiLeft + 7, this.guiTop + 109, this.guiTop + 159, 0xCCCCCC, true, false);
 
     }
 
@@ -353,7 +355,6 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
     }
 
     @Override
-    @ParametersAreNonnullByDefault
     protected void drawGuiContainerForegroundLayer(MatrixStack matrixStack, int x, int y) {
         this.font.drawText(matrixStack, ((TextComponent)this.title).setStyle(this.title.getStyle().setUnderlined(true)), (float)this.titleX, (float)this.titleY, 0x404040);
         // Draw object texts
@@ -366,7 +367,6 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
     }
 
     @Override
-    @ParametersAreNonnullByDefault
     protected void drawGuiContainerBackgroundLayer(MatrixStack matrixStack, float partialTicks, int x, int y) {
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         Objects.requireNonNull(this.minecraft, "Minecraft cannot be null.").getTextureManager().bindTexture(SCANNER_SCREEN_TEXTURE);
@@ -380,7 +380,6 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> {
     }
 
     @Override
-    @ParametersAreNonnullByDefault
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks){
         this.renderBackground(matrixStack);
         this.mouseX = mouseX;

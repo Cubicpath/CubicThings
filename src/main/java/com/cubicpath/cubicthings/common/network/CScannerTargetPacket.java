@@ -48,16 +48,18 @@ public class CScannerTargetPacket extends ModPacket {
             ScannerItem.ScannerMode scannerMode = ScannerItem.getScannerMode(stack);
             if (stack.getItem() instanceof ScannerItem){
                 switch(this.flag){
-                    case 1: {
+                    default: throw new IllegalArgumentException("Unhandled byte-value: " + this.flag);
+
+                    case (byte) 1: {
                         ScannerItem.addTarget(stack, scannerMode, this.scanTarget);
                         break;
                     }
-                    case 2: {
+                    case (byte) 2: {
                         ScannerItem.removeTarget(stack, scannerMode, this.scanTarget);
                         break;
                     }
-                    case 3: {
-                        scannerMode.getTargetList(stack).forEach((stringNBT) -> ScannerItem.removeTarget(stack, scannerMode, stringNBT.getString()));
+                    case (byte) 3: {
+                        scannerMode.getTargetList(stack).clear();
                         break;
                     }
                 }
