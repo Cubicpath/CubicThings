@@ -15,7 +15,6 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 public class SStepHeightSyncPacket extends ModPacket {
-    private static final NetworkDirection DIRECTION = NetworkDirection.PLAY_TO_CLIENT;
     private final float data;
 
     public SStepHeightSyncPacket(PacketBuffer buf) {
@@ -40,7 +39,4 @@ public class SStepHeightSyncPacket extends ModPacket {
         context.get().setPacketHandled(true);
     }
 
-    public static NetworkDirection getDirection(){
-        return DIRECTION;
-    }
 }

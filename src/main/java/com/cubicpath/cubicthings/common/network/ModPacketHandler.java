@@ -27,7 +27,15 @@ public class ModPacketHandler {
                 () -> this.protocolVersion, this.protocolVersion::equals, this.protocolVersion::equals);
     }
 
-    public <T extends ModPacket> void registerPacket(Class<T> messageType, Function<PacketBuffer, T> decoder, NetworkDirection networkDirection){
+    public <T extends ModPacket> void registerCPacket(Class<T> messageType, Function<PacketBuffer, T> decoder){
+        registerPacket(messageType, decoder, NetworkDirection.PLAY_TO_SERVER);
+    }
+
+    public <T extends ModPacket> void registerSPacket(Class<T> messageType, Function<PacketBuffer, T> decoder){
+        registerPacket(messageType, decoder, NetworkDirection.PLAY_TO_CLIENT);
+    }
+
+    private <T extends ModPacket> void registerPacket(Class<T> messageType, Function<PacketBuffer, T> decoder, NetworkDirection networkDirection){
         this.channel.registerMessage(this.packetIndex++, messageType, T::encode, decoder, T::handle, Optional.ofNullable(networkDirection));
     }
 

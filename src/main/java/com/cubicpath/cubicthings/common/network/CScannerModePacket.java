@@ -16,7 +16,6 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 public class CScannerModePacket extends ModPacket {
-    private static final NetworkDirection DIRECTION = NetworkDirection.PLAY_TO_SERVER;
     private final ScannerItem.ScannerMode scannerMode;
     private final int slotIndex;
 
@@ -48,7 +47,4 @@ public class CScannerModePacket extends ModPacket {
         context.get().setPacketHandled(true);
     }
 
-    public static NetworkDirection getDirection(){
-        return DIRECTION;
-    }
 }

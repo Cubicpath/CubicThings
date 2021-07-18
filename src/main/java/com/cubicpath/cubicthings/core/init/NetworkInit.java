@@ -19,11 +19,11 @@ public final class NetworkInit {
 
     public static void registerPackets() {
         // Client Packets
-        PACKET_HANDLER.registerPacket(CScannerModePacket.class, CScannerModePacket::new, CScannerModePacket.getDirection());
-        PACKET_HANDLER.registerPacket(CScannerTargetPacket.class, CScannerTargetPacket::new, CScannerTargetPacket.getDirection());
+        PACKET_HANDLER.registerCPacket(CScannerModePacket.class, CScannerModePacket::new);
+        PACKET_HANDLER.registerCPacket(CScannerTargetPacket.class, CScannerTargetPacket::new);
 
         // Server Packets
-        PACKET_HANDLER.registerPacket(SStepHeightSyncPacket.class, SStepHeightSyncPacket::new, SStepHeightSyncPacket.getDirection());
+        PACKET_HANDLER.registerSPacket(SStepHeightSyncPacket.class, SStepHeightSyncPacket::new);
     }
 
 }
