@@ -37,11 +37,10 @@ import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.network.NetworkHooks;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public class ScannerItem extends Item implements INamedContainerProvider {
+public class ScannerItem extends Item implements INamedContainerProvider, IDefaultNBTHolder {
 
     public enum ScannerMode{
         BLOCKS(KEY_TARGETS_BLOCK,  8),
@@ -127,7 +126,7 @@ public class ScannerItem extends Item implements INamedContainerProvider {
         targetList.remove(stringNBT);
     }
 
-    public static void setupNBT(ItemStack stack){
+    public void setupNBT(ItemStack stack){
         new NBTBuilder(stack.getOrCreateTag())
                 .putString(KEY_MODE, ScannerMode.BLOCKS.toTitleCase())
                 .put(ScannerMode.BLOCKS.nbtName, new ListNBT())
@@ -153,7 +152,6 @@ public class ScannerItem extends Item implements INamedContainerProvider {
     }
 
     @Override
-    @Nonnull
     public ActionResult<ItemStack> onItemRightClick(World worldIn, PlayerEntity playerIn, Hand handIn) {
         final HashSet<ScanContext> blockPosToScan = new HashSet<>();
         final ItemStack itemStack = playerIn.getHeldItem(handIn);
@@ -275,7 +273,7 @@ public class ScannerItem extends Item implements INamedContainerProvider {
         List<Object> entitiesWithinAABB = new LinkedList<>();
 
         if (Arrays.stream(entityTypes).anyMatch((entityType) -> {
-            entitiesWithinAABB.addAll(world.getEntitiesWithinAABB(entityType, new AxisAlignedBB(pos), (a) -> !a.equals(scanner)));
+            entitiesWithinAABB.addAll(world.getEntitiesWithinAABB(entityType, new AxisAlignedBB(pos), (entity) -> !entity.equals(scanner)));
             return entitiesWithinAABB.size() > 0;
         })) {
             if (volume != null) world.playSound(scanner instanceof PlayerEntity ? (PlayerEntity)scanner : null, pos, SoundEvents.UI_BUTTON_CLICK, SoundCategory.PLAYERS, volume * 2 * entitiesWithinAABB.size(), pitch);
@@ -332,7 +330,6 @@ public class ScannerItem extends Item implements INamedContainerProvider {
     }
 
     @Override
-    @Nonnull
     public ItemStack getDefaultInstance() {
         ItemStack stack = super.getDefaultInstance();
         setupNBT(stack);

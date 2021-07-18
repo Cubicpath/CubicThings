@@ -32,7 +32,7 @@ public final class CubicThings {
      *
      * @see ForgeConfigSpec
      */
-    public static class Config {
+    public static final class Config {
         public static final ForgeConfigSpec SPEC;
         public static final ForgeConfigSpec.ConfigValue<String> stringValue;
         public static final ForgeConfigSpec.ConfigValue<Integer> integerValue;
