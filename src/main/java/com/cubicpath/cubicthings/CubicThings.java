@@ -20,6 +20,11 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+
 /**
  * The mod's {@link EventBusSubscriber} and main Class. Contains constants and setup methods.
  *
@@ -29,26 +34,37 @@ import org.apache.logging.log4j.Logger;
 @EventBusSubscriber(modid = CubicThings.MODID, bus = EventBusSubscriber.Bus.MOD)
 public final class CubicThings {
     /**
-     * Contains changeable values stored in a config file.
+     * Contains changeable values stored in a config file. Uses reflection to assign values.
      *
      * @see ForgeConfigSpec
      */
+    @SuppressWarnings("unused")
     public static final class Config {
         public static final ForgeConfigSpec SPEC;
-        public static final ForgeConfigSpec.ConfigValue<String> stringValue;
-        public static final ForgeConfigSpec.ConfigValue<Integer> integerValue;
-        public static final ForgeConfigSpec.ConfigValue<Double> doubleValue;
-        public static final ForgeConfigSpec.ConfigValue<Boolean> booleanValue;
+        public static ForgeConfigSpec.ConfigValue<String> stringValue;
+        public static ForgeConfigSpec.ConfigValue<Integer> integerValue;
+        public static ForgeConfigSpec.ConfigValue<Double> doubleValue;
+        public static ForgeConfigSpec.ConfigValue<Boolean> booleanValue;
 
         static {
             ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
-
-            stringValue = builder.comment("This is a String value. It has quotation marks.").translation("config.cubicthings.stringValue").define(Lists.newArrayList("stringValue"), () -> "Value", o -> o != null && String.class.isAssignableFrom(o.getClass()), String.class);
-            integerValue = builder.comment("This is an Integer value. It is a whole number.").translation("config.cubicthings.integerValue").define(Lists.newArrayList("integerValue"), () -> 0, o -> o != null && Integer.class.isAssignableFrom(o.getClass()), Integer.class);
-            doubleValue = builder.comment("This is a double value. It has decimals.").translation("config.cubicthings.doubleValue").define(Lists.newArrayList("doubleValue"), () -> 1.000D, o -> o != null && Double.class.isAssignableFrom(o.getClass()), Double.class);
-            booleanValue = builder.comment("This is a boolean value. It has 2 possible values.").translation("config.cubicthings.booleanValue").define(Lists.newArrayList("booleanValue"), () -> true, o -> o != null && Boolean.class.isAssignableFrom(o.getClass()), Boolean.class);
-
+            buildValue(builder, "stringValue", "Value", "This is a String value. It has quotation marks.", String.class);
+            buildValue(builder, "integerValue", 0, "This is an Integer value. It is a whole number.", Integer.class);
+            buildValue(builder, "doubleValue", 1.000D, "This is a Double value. It has decimals.", Double.class);
+            buildValue(builder, "booleanValue", true, "This is a Boolean value. It has 2 possible values.", Boolean.class);
             SPEC = builder.build();
+        }
+
+        static <T> void buildValue(ForgeConfigSpec.Builder builder, String valueName, T defaultValue, @Nullable String comment, Class<T> clazz){
+            List<String> path = Lists.newArrayList(valueName);
+            Supplier<T> defaultSupplier = () -> defaultValue;
+            Predicate<Object> validator = (o) -> o != null && clazz.isAssignableFrom(o.getClass());
+            try {
+                if (comment != null) builder.comment(comment);
+                Config.class.getField(valueName).set(null, builder.translation("config." + MODID + "." + valueName).define(path, defaultSupplier, validator, clazz));
+            } catch (NoSuchFieldException | IllegalAccessException exception){
+                LOGGER.warn("Unable instantiate configValue '" + valueName + "' using reflection. Reason: " + exception.getMessage());
+            }
         }
     }
 
