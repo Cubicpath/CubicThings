@@ -4,28 +4,28 @@ license="§7§lThe §4§lMIT §7§lLicence§r (MIT)"
 issueTrackerURL="https://github.com/Cubicpath/CubicTools/issues"
 
 [[mods]]
-modId = "cubicthings"
-version = "0.2.4"
-displayName = "§bCubic Things"
-updateJSONURL="https://gist.githubusercontent.com/Cubicpath/7549c5e1d4c97f4d82a3dc233f0f95d6/raw"
-displayURL="https://github.com/Cubicpath/CubicTools"
-logoFile="modbanner.png"
-credits="Forge, and the Modding Community!"
-authors = "Cubicpath"
-description = '''
+    modId = "cubicthings"
+    version = "0.2.5"
+    displayName = "§bCubic Things"
+    updateJSONURL="https://gist.githubusercontent.com/Cubicpath/7549c5e1d4c97f4d82a3dc233f0f95d6/raw"
+    displayURL="https://github.com/Cubicpath/CubicTools"
+    logoFile="modbanner.png"
+    credits="Forge, and the Modding Community!"
+    authors = "Cubicpath"
+    description = '''
     Random assortment of useful things made by Cubicpath.
 '''
 
 [[dependencies.cubicthings]]
-modId = "forge"
-mandatory = true
-versionRange = "[36,)"
-ordering = "NONE"
-side = "BOTH"
+    modId = "forge"
+    mandatory = true
+    versionRange = "[36,)"
+    ordering = "NONE"
+    side = "BOTH"
 
 [[dependencies.cubicthings]]
-modId = "minecraft"
-mandatory = true
-versionRange = "[1.16.5,1.17)"
-ordering = "NONE"
-side = "BOTH"
+    modId = "minecraft"
+    mandatory = true
+    versionRange = "[1.16.5,1.17)"
+    ordering = "NONE"
+    side = "BOTH"
