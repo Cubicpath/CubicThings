@@ -283,7 +283,7 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> implements 
         }));
         this.targetModeButton.active = true;
 
-        this.targetList = new TextListWidget(this, 156, 50, this.guiTop + 109, this.guiLeft + 7, 2, -2 , this.font.FONT_HEIGHT + 2, 0xCCCCCC, true, false);
+        this.targetList = new TextListWidget(this, 156, 50, this.guiLeft + 7, this.guiTop + 109, 2, -2 , this.font.FONT_HEIGHT + 2, 0xCCCCCC, true, false);
 
     }
 

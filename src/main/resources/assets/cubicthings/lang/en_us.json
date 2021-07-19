@@ -16,7 +16,11 @@
   "enchantment.cubicthings.multimine": "Multimine",
 
   "gui.submit": "Submit",
-  "gui.modConfig" : "%s Config",
+  "modConfig.title" : "%s Config",
+  "modConfig.cubicthings.comments.shown": "Comments: Shown",
+  "modConfig.cubicthings.comments.hidden": "Comments: Hidden",
+  "modConfig.cubicthings.separators.shown": "Separators: Shown",
+  "modConfig.cubicthings.separators.hidden": "Separators: Hidden",
   "gui.cubicthings.scannerMenu.title" : "Scanner Menu",
   "gui.cubicthings.scannerMenu.target" : "Target: %s",
   "gui.cubicthings.scannerMenu.add" : "Add %s",

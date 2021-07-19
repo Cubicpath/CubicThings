@@ -7,6 +7,7 @@ package com.cubicpath.cubicthings;
 import com.cubicpath.cubicthings.client.gui.screen.ConfigScreen;
 import com.cubicpath.cubicthings.core.init.*;
 
+import com.google.common.collect.Lists;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ExtensionPoint;
@@ -37,13 +38,15 @@ public final class CubicThings {
         public static final ForgeConfigSpec.ConfigValue<String> stringValue;
         public static final ForgeConfigSpec.ConfigValue<Integer> integerValue;
         public static final ForgeConfigSpec.ConfigValue<Double> doubleValue;
+        public static final ForgeConfigSpec.ConfigValue<Boolean> booleanValue;
 
         static {
             ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 
-            stringValue = builder.comment("This is a String value. It has quotation marks.").translation("config.cubicthings.stringValue").define("stringValue", "Value");
-            integerValue = builder.comment("This is an Integer value. It is a whole number.").translation("config.cubicthings.integerValue").define("integerValue", 0);
-            doubleValue = builder.comment("This is a double value. It has decimals.").translation("config.cubicthings.doubleValue").define("doubleValue", 1.000D);
+            stringValue = builder.comment("This is a String value. It has quotation marks.").translation("config.cubicthings.stringValue").define(Lists.newArrayList("stringValue"), () -> "Value", o -> o != null && String.class.isAssignableFrom(o.getClass()), String.class);
+            integerValue = builder.comment("This is an Integer value. It is a whole number.").translation("config.cubicthings.integerValue").define(Lists.newArrayList("integerValue"), () -> 0, o -> o != null && Integer.class.isAssignableFrom(o.getClass()), Integer.class);
+            doubleValue = builder.comment("This is a double value. It has decimals.").translation("config.cubicthings.doubleValue").define(Lists.newArrayList("doubleValue"), () -> 1.000D, o -> o != null && Double.class.isAssignableFrom(o.getClass()), Double.class);
+            booleanValue = builder.comment("This is a boolean value. It has 2 possible values.").translation("config.cubicthings.booleanValue").define(Lists.newArrayList("booleanValue"), () -> true, o -> o != null && Boolean.class.isAssignableFrom(o.getClass()), Boolean.class);
 
             SPEC = builder.build();
         }

@@ -22,41 +22,41 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class ConfigScreen extends Screen implements ITextListHolder {
+    protected static boolean hideComments, hideSeparators = false;
+
     protected boolean clickedKeyField, clickedValueField, invalidKey, invalidValue = false;
     protected final Screen prevScreen;
-    protected Button cancelButton, submitChangeButton;
+    protected Button cancelButton, toggleCommentsButton, toggleSeparatorsButton, submitChangeButton;
     protected TextFieldWidget keyInputField, valueInputField;
     protected TextListWidget configList;
 
     public ConfigScreen(Screen prevScreen) {
-        super(new TranslationTextComponent("gui.modConfig", CubicThings.MODNAME));
+        super(new TranslationTextComponent("modConfig.title", CubicThings.MODNAME));
         this.prevScreen = prevScreen;
     }
 
     void updateWidgets(){
-        if (!this.clickedKeyField && this.keyInputField.isFocused()) {
+        if ((!this.clickedKeyField || this.invalidKey) && this.keyInputField.isFocused()) {
             this.keyInputField.setText("");
-            this.clickedKeyField = true;
-        }
-        if (!this.clickedValueField && this.valueInputField.isFocused()) {
-            this.valueInputField.setText("");
-            this.clickedValueField = true;
-        }
-
-        if (this.clickedKeyField && this.keyInputField.isFocused()){
             this.keyInputField.setTextColor(0xA0A0A0);
             this.invalidKey = false;
+            this.clickedKeyField = true;
         }
 
-        if (this.clickedValueField && this.valueInputField.isFocused()){
+        if ((!this.clickedValueField || this.invalidValue) && this.valueInputField.isFocused()) {
+            this.valueInputField.setText("");
             this.valueInputField.setTextColor(0xA0A0A0);
             this.invalidValue = false;
+            this.clickedValueField = true;
         }
 
         if (CubicThings.Config.SPEC.valueMap().containsKey(this.keyInputField.getText()))
             this.keyInputField.setTextColor(0x44BA44);
         else if (!this.invalidKey)
             this.keyInputField.setTextColor(0xA0A0A0);
+
+        this.toggleCommentsButton.setMessage(new TranslationTextComponent(hideComments ? "modConfig.cubicthings.comments.hidden" : "modConfig.cubicthings.comments.shown"));
+        this.toggleSeparatorsButton.setMessage(new TranslationTextComponent(hideSeparators ? "modConfig.cubicthings.separators.hidden" : "modConfig.cubicthings.separators.shown"));
 
         this.configList.refreshList();
     }
@@ -69,12 +69,19 @@ public class ConfigScreen extends Screen implements ITextListHolder {
     @Override
     public <T extends ExtendedList.AbstractListEntry<T>> void buildTextList(Consumer<T> textListViewConsumer, Function<String, T> newEntry) {
         CubicThings.Config.SPEC.valueMap().keySet().forEach((key) -> {
-            textListViewConsumer.accept(newEntry.apply("#" + ((ForgeConfigSpec.ValueSpec)CubicThings.Config.SPEC.valueMap().get(key)).getComment()));
-            try { textListViewConsumer.accept(newEntry.apply(key + " = " + ((ForgeConfigSpec.ConfigValue<?>)CubicThings.Config.class.getField(key).get(null)).get().toString()));
+            if (!hideComments) textListViewConsumer.accept(newEntry.apply("#" + ((ForgeConfigSpec.ValueSpec)CubicThings.Config.SPEC.valueMap().get(key)).getComment()));
+            try {
+                Object o = ((ForgeConfigSpec.ConfigValue<?>)CubicThings.Config.class.getField(key).get(null)).get();
+                if (o instanceof String)
+                    textListViewConsumer.accept(newEntry.apply(key + " = \"" + ((String) o).replace("\\", "\\\\").replace("\"", "\\\"") + "\""));
+                else
+                    textListViewConsumer.accept(newEntry.apply(key + " = " + o.toString()));
             } catch (IllegalAccessException | NoSuchFieldException ignored) { }
-            textListViewConsumer.accept(newEntry.apply(""));
-            textListViewConsumer.accept(newEntry.apply("--------------------"));
-            textListViewConsumer.accept(newEntry.apply(""));
+            if (!hideSeparators) {
+                textListViewConsumer.accept(newEntry.apply(""));
+                textListViewConsumer.accept(newEntry.apply("--------------------"));
+                textListViewConsumer.accept(newEntry.apply(""));
+            }
         });
     }
 
@@ -96,10 +103,21 @@ public class ConfigScreen extends Screen implements ITextListHolder {
         this.valueInputField.setText("Value");
         addButton(this.valueInputField);
 
-        this.cancelButton = addButton(new Button(this.width - 95, this.height - 35,80, 20, new TranslationTextComponent("gui.cancel"), (button) -> {
+        this.toggleCommentsButton = addButton(new Button(this.width / 2 - 150, 200, 110, 20, new TranslationTextComponent(hideComments ? "modConfig.cubicthings.comments.hidden" : "modConfig.cubicthings.comments.shown"), (button) -> {
+            // Toggles comment hiding
+            hideComments = !hideComments;
+        }));
+
+        this.toggleSeparatorsButton = addButton(new Button(this.width / 2 - 40, 200, 110, 20, new TranslationTextComponent(hideComments ? "modConfig.cubicthings.separators.hidden" : "modConfig.cubicthings.separators.shown"), (button) -> {
+            // Toggles separator hiding
+            hideSeparators = !hideSeparators;
+        }));
+
+        this.cancelButton = addButton(new Button(this.width / 2 + 80, 200, 70, 20, new TranslationTextComponent("gui.cancel"), (button) -> {
             // Send player back to last screen.
             getMinecraft().displayGuiScreen(this.prevScreen);
         }));
+        this.cancelButton.active = true;
 
         this.submitChangeButton = addButton(new Button(this.width / 2 + 100, 25, 50, 20,  new TranslationTextComponent("gui.submit"), (button) -> {
             if (!CubicThings.Config.SPEC.valueMap().containsKey(this.keyInputField.getText())) {
@@ -109,15 +127,20 @@ public class ConfigScreen extends Screen implements ITextListHolder {
                 ForgeConfigSpec.ValueSpec value = (ForgeConfigSpec.ValueSpec) CubicThings.Config.SPEC.valueMap().get(this.keyInputField.getText());
                 try {
                     Object o = CubicThings.Config.class.getField(this.keyInputField.getText()).get(null);
+                    String valueInput = this.valueInputField.getText();
                     if (value != null && o instanceof ForgeConfigSpec.ConfigValue<?>){
                         if (value.getClazz() == String.class)
-                            ((ForgeConfigSpec.ConfigValue<String>) o).set(this.valueInputField.getText());
+                            ((ForgeConfigSpec.ConfigValue<String>) o).set(valueInput);
                         else if (value.getClazz() == Integer.class)
-                            ((ForgeConfigSpec.ConfigValue<Integer>) o).set(Integer.valueOf(this.valueInputField.getText()));
+                            ((ForgeConfigSpec.ConfigValue<Integer>) o).set(Integer.valueOf(valueInput));
                         else if (value.getClazz() == Double.class)
-                            ((ForgeConfigSpec.ConfigValue<Double>) o).set(Double.valueOf(this.valueInputField.getText()));
-                        else if (value.getClazz() == Boolean.class)
-                            ((ForgeConfigSpec.ConfigValue<Boolean>) o).set(Boolean.valueOf(this.valueInputField.getText()));
+                            ((ForgeConfigSpec.ConfigValue<Double>) o).set(Double.valueOf(valueInput));
+                        else if (value.getClazz() == Boolean.class) {
+                            boolean isTruthy = valueInput.equalsIgnoreCase("true") || valueInput.equalsIgnoreCase("t") || valueInput.equals("1");
+                            boolean isFalsy = valueInput.equalsIgnoreCase("false") || valueInput.equalsIgnoreCase("f") || valueInput.equals("0");
+                            if (isTruthy || isFalsy) ((ForgeConfigSpec.ConfigValue<Boolean>) o).set(isTruthy);
+                            else throw new Exception();
+                        }
 
                         ((ForgeConfigSpec.ConfigValue<?>) o).save();
                         CubicThings.Config.SPEC.save();
