@@ -7,8 +7,6 @@ package com.cubicpath.cubicthings.core.init;
 import com.cubicpath.cubicthings.CubicThings;
 import com.cubicpath.cubicthings.common.network.*;
 
-import java.util.Optional;
-
 @SuppressWarnings("unused")
 public final class NetworkInit {
     private NetworkInit(){

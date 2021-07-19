@@ -18,7 +18,7 @@ public final class CommandInit {
         throw new IllegalStateException();
     }
 
-    public static List<Consumer<CommandDispatcher<CommandSource>>> commandEntries = new LinkedList<>();
+    public static final List<Consumer<CommandDispatcher<CommandSource>>> commandEntries = new LinkedList<>();
 
     public static void registerCommands() {
         commandEntries.add(BurnCommand::register);
