@@ -43,7 +43,7 @@ public class TextListWidget extends ExtendedList<TextListWidget.TextEntry>{
 
     public void refreshList() {
         this.clearEntries();
-        this.parent.buildTextList(this::addEntry, (stringIn) -> new TextEntry(ITextComponent.getTextComponentOrEmpty(stringIn), this.parent, this.borderPaddingX, this.borderPaddingY, this.textColor));
+        this.parent.buildTextList(this::addEntry, (stringIn, colorIn) -> new TextEntry(ITextComponent.getTextComponentOrEmpty(stringIn), this.parent, this.borderPaddingX, this.borderPaddingY, colorIn != null ? colorIn : this.textColor));
     }
 
     @Override

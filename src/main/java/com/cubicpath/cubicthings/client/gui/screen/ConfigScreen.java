@@ -18,8 +18,8 @@ import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.ForgeConfigSpec;
 
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class ConfigScreen extends Screen implements ITextListHolder {
     protected static boolean hideComments, hideSeparators = false;
@@ -67,21 +67,21 @@ public class ConfigScreen extends Screen implements ITextListHolder {
     }
 
     @Override
-    public <T extends ExtendedList.AbstractListEntry<T>> void buildTextList(Consumer<T> textListViewConsumer, Function<String, T> newEntry) {
+    public <T extends ExtendedList.AbstractListEntry<T>> void buildTextList(Consumer<T> textListViewConsumer, BiFunction<String, Integer, T> newEntry) {
         CubicThings.Config.SPEC.valueMap().keySet().forEach((key) -> {
-            if (!hideComments) textListViewConsumer.accept(newEntry.apply("#" + ((ForgeConfigSpec.ValueSpec)CubicThings.Config.SPEC.valueMap().get(key)).getComment()));
+            if (!hideComments) textListViewConsumer.accept(newEntry.apply("#" + ((ForgeConfigSpec.ValueSpec)CubicThings.Config.SPEC.valueMap().get(key)).getComment(), 0x8190A0));
             try {
                 Object o = ((ForgeConfigSpec.ConfigValue<?>)CubicThings.Config.class.getField(key).get(null)).get();
                 if (o instanceof String)
-                    textListViewConsumer.accept(newEntry.apply(key + " = \"" + ((String) o).replace("\\", "\\\\").replace("\"", "\\\"") + "\""));
+                    textListViewConsumer.accept(newEntry.apply(key + "\u00A77 = \u00A72\"" + ((String) o).replace("\\", "\\\\").replace("\"", "\\\"") + "\"", 0xDB7F41));
+                else if (o instanceof Boolean)
+                    textListViewConsumer.accept(newEntry.apply(key + "\u00A77 = \u00A7d" + o, 0xDB7F41));
+                else if (o instanceof Integer)
+                    textListViewConsumer.accept(newEntry.apply(key + "\u00A77 = \u00A76" + o, 0xDB7F41));
                 else
-                    textListViewConsumer.accept(newEntry.apply(key + " = " + o.toString()));
+                    textListViewConsumer.accept(newEntry.apply(key + "\u00A77 = \u00A76" + o.toString(), 0xDB7F41));
             } catch (IllegalAccessException | NoSuchFieldException ignored) { }
-            if (!hideSeparators) {
-                textListViewConsumer.accept(newEntry.apply(""));
-                textListViewConsumer.accept(newEntry.apply("--------------------"));
-                textListViewConsumer.accept(newEntry.apply(""));
-            }
+            if (!hideSeparators) textListViewConsumer.accept(newEntry.apply("--------------------", 0x4400AA));
         });
     }
 
@@ -117,7 +117,6 @@ public class ConfigScreen extends Screen implements ITextListHolder {
             // Send player back to last screen.
             getMinecraft().displayGuiScreen(this.prevScreen);
         }));
-        this.cancelButton.active = true;
 
         this.submitChangeButton = addButton(new Button(this.width / 2 + 100, 25, 50, 20,  new TranslationTextComponent("gui.submit"), (button) -> {
             if (!CubicThings.Config.SPEC.valueMap().containsKey(this.keyInputField.getText())) {
@@ -132,13 +131,13 @@ public class ConfigScreen extends Screen implements ITextListHolder {
                         if (value.getClazz() == String.class)
                             ((ForgeConfigSpec.ConfigValue<String>) o).set(valueInput);
                         else if (value.getClazz() == Integer.class)
-                            ((ForgeConfigSpec.ConfigValue<Integer>) o).set(Integer.valueOf(valueInput));
+                            ((ForgeConfigSpec.ConfigValue<Integer>) o).set(Integer.decode(valueInput));
                         else if (value.getClazz() == Double.class)
                             ((ForgeConfigSpec.ConfigValue<Double>) o).set(Double.valueOf(valueInput));
                         else if (value.getClazz() == Boolean.class) {
-                            boolean isTruthy = valueInput.equalsIgnoreCase("true") || valueInput.equalsIgnoreCase("t") || valueInput.equals("1");
-                            boolean isFalsy = valueInput.equalsIgnoreCase("false") || valueInput.equalsIgnoreCase("f") || valueInput.equals("0");
-                            if (isTruthy || isFalsy) ((ForgeConfigSpec.ConfigValue<Boolean>) o).set(isTruthy);
+                            boolean isTruthy = valueInput.equalsIgnoreCase("true") || valueInput.equalsIgnoreCase("yes") || valueInput.equalsIgnoreCase("y") || valueInput.equalsIgnoreCase("t") || valueInput.equals("1");
+                            boolean isFalsy = valueInput.equalsIgnoreCase("false") || valueInput.equalsIgnoreCase("no") || valueInput.equalsIgnoreCase("n") || valueInput.equalsIgnoreCase("f") || valueInput.equals("0");
+                            if (isTruthy || isFalsy) ((ForgeConfigSpec.ConfigValue<Boolean>) o).set(isTruthy && !isFalsy);
                             else throw new Exception();
                         }
 
