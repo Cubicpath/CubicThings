@@ -15,7 +15,8 @@
   "enchantment.cubicthings.multistep": "Multistep",
   "enchantment.cubicthings.multimine": "Multimine",
 
-  "gui.cubicthings.configMenu.title" : "Config Menu",
+  "gui.submit": "Submit",
+  "gui.modConfig" : "%s Config",
   "gui.cubicthings.scannerMenu.title" : "Scanner Menu",
   "gui.cubicthings.scannerMenu.target" : "Target: %s",
   "gui.cubicthings.scannerMenu.add" : "Add %s",

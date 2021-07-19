@@ -55,8 +55,7 @@ public final class CubicThings {
     public static final String MODID = "cubicthings";
 
     public static final String MODNAME = "Cubic Things";
-    public static final String MODVER = "0.2.4";
-    public static final String MCVER = "1.16.5";
+    public static final String MODVER = "0.2.5-alpha";
 
     public CubicThings() {
         final ModLoadingContext modLoadingContext = ModLoadingContext.get();

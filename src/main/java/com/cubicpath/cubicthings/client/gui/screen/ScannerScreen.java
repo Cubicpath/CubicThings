@@ -108,8 +108,8 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> implements 
         return this.font;
     }
 
-    public <T extends ExtendedList.AbstractListEntry<T>> void buildTextList(Consumer<T> targetListViewConsumer, Function<String, T> newEntry) {
-        getStoredTargetSet().stream().sorted().forEach(string -> targetListViewConsumer.accept(newEntry.apply(string)));
+    public <T extends ExtendedList.AbstractListEntry<T>> void buildTextList(Consumer<T> textListViewConsumer, Function<String, T> newEntry) {
+        getStoredTargetSet().stream().sorted().forEach(string -> textListViewConsumer.accept(newEntry.apply(string)));
     }
 
     public void updateWidgets(){
@@ -230,7 +230,7 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> implements 
         super.init();
         getMinecraft().keyboardListener.enableRepeatEvents(true);
 
-        this.targetInputField = new TextFieldWidget(this.font, this.guiLeft + 10, this.guiTop + 27, 72, 8, ITextComponent.getTextComponentOrEmpty("Entity Input"));
+        this.targetInputField = new TextFieldWidget(this.font, this.guiLeft + 10, this.guiTop + 27, 72, 8, ITextComponent.getTextComponentOrEmpty("Target Field"));
         this.targetInputField.setMaxStringLength(256);
         this.targetInputField.setTextColor(0x888888);
         this.targetInputField.setText("Target Field");
@@ -283,7 +283,7 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> implements 
         }));
         this.targetModeButton.active = true;
 
-        this.targetList = new TextListWidget(this, 156, this.guiLeft + 7, this.guiTop + 109, this.guiTop + 159, 0xCCCCCC, true, false);
+        this.targetList = new TextListWidget(this, 156, 50, this.guiTop + 109, this.guiLeft + 7, 2, -2 , this.font.FONT_HEIGHT + 2, 0xCCCCCC, true, false);
 
     }
 

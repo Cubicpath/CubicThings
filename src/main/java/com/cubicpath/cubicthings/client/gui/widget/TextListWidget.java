@@ -6,6 +6,7 @@ package com.cubicpath.cubicthings.client.gui.widget;
 
 import com.cubicpath.cubicthings.client.gui.screen.ITextListHolder;
 import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.widget.list.ExtendedList;
 import net.minecraft.util.text.ITextComponent;
@@ -13,20 +14,20 @@ import net.minecraft.util.text.ITextComponent;
 public class TextListWidget extends ExtendedList<TextListWidget.TextEntry>{
     private final boolean renderDirtBackground;
     private final boolean renderDarkOutline;
-    private final int left;
-    private final int listWidth;
-    private final int textColor;
+    private final int left, listWidth, borderPaddingX, borderPaddingY, textColor;
     private final ITextListHolder parent;
 
-    public TextListWidget(ITextListHolder parent, int listWidth, int left, int top, int bottom, int textColor, boolean renderDirtBackground, boolean renderDarkOutline) {
-        super(parent.getMinecraft(), listWidth, 0, top, bottom, parent.getFontRenderer().FONT_HEIGHT + 2);
+    public TextListWidget(ITextListHolder parent, int listWidth, int listHeight, int x, int y, int borderPaddingX, int borderPaddingY, int textSpacing, int textColor, boolean renderDirtBackground, boolean renderDarkOutline) {
+        super(Minecraft.getInstance(), listWidth, 0, y, y + listHeight, textSpacing);
         this.renderDirtBackground = renderDirtBackground;
         this.renderDarkOutline = renderDarkOutline;
-        this.left = left;
+        this.left = x;
         this.listWidth = listWidth;
+        this.borderPaddingX = borderPaddingX;
+        this.borderPaddingY = borderPaddingY;
         this.textColor = textColor;
         this.parent = parent;
-        setLeftPos(left); // Fixes bug where text is rendered on the far left of the screen
+        setLeftPos(x); // Fixes bug where text is rendered on the far left of the screen
         refreshList();
     }
 
@@ -42,7 +43,7 @@ public class TextListWidget extends ExtendedList<TextListWidget.TextEntry>{
 
     public void refreshList() {
         this.clearEntries();
-        this.parent.buildTextList(this::addEntry, (target) -> new TextEntry(ITextComponent.getTextComponentOrEmpty(target), this.parent, this.textColor));
+        this.parent.buildTextList(this::addEntry, (stringIn) -> new TextEntry(ITextComponent.getTextComponentOrEmpty(stringIn), this.parent, this.borderPaddingX, this.borderPaddingY, this.textColor));
     }
 
     @Override
@@ -59,12 +60,14 @@ public class TextListWidget extends ExtendedList<TextListWidget.TextEntry>{
     }
 
     public static class TextEntry extends ExtendedList.AbstractListEntry<TextEntry>{
+        private final int xPadding, yPadding, color;
         private final ITextComponent displayText;
         private final ITextListHolder parent;
-        private final int textColor;
 
-        public TextEntry(ITextComponent displayText, ITextListHolder parent, int textColor) {
-            this.textColor = textColor;
+        public TextEntry(ITextComponent displayText, ITextListHolder parent, int xPadding, int yPadding, int color) {
+            this.xPadding = xPadding;
+            this.yPadding = yPadding;
+            this.color = color;
             this.displayText = displayText;
             this.parent = parent;
         }
@@ -72,7 +75,7 @@ public class TextListWidget extends ExtendedList<TextListWidget.TextEntry>{
         @Override
         public void render(MatrixStack matrixStack, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean isMouseOver, float partialTicks) {
             FontRenderer font = this.parent.getFontRenderer();
-            font.drawText(matrixStack, this.displayText, left + 2 , top - 2, this.textColor);
+            font.drawText(matrixStack, this.displayText, left + this.xPadding , top + this.yPadding, this.color);
         }
     }
 }
