@@ -55,7 +55,7 @@ public class HatCommand {
                 entity.setItemStackToSlot(EquipmentSlotType.HEAD, stack);
                 if (!context.getSource().hasPermissionLevel(2)) entity.setItemStackToSlot(EquipmentSlotType.MAINHAND, ItemStack.EMPTY);
                 i++;
-             }
+            }
         }
 
         // Send feedback to player

@@ -98,7 +98,7 @@ public class ScannerItem extends Item implements INamedContainerProvider, IDefau
     /** Return the {@linkplain #KEY_MODE} NBT value. */
     public static ScannerMode getScannerMode(ItemStack stack) {
         CompoundNBT compoundnbt = stack.getOrCreateTag();
-        if (!compoundnbt.contains(KEY_MODE)) compoundnbt.putString(KEY_MODE, "Blocks");
+        if (!compoundnbt.contains(KEY_MODE)) new NBTBuilder(compoundnbt).putString(KEY_MODE, "Blocks");
         if (!compoundnbt.getString(KEY_MODE).isEmpty())
             return ScannerMode.valueOf(compoundnbt.getString(KEY_MODE).toUpperCase());
         return ScannerMode.BLOCKS;
@@ -129,9 +129,9 @@ public class ScannerItem extends Item implements INamedContainerProvider, IDefau
     public void setupNBT(ItemStack stack){
         new NBTBuilder(stack.getOrCreateTag())
                 .putString(KEY_MODE, ScannerMode.BLOCKS.toTitleCase())
-                .put(ScannerMode.BLOCKS.nbtName, new ListNBT())
-                .put(ScannerMode.BIOMES.nbtName, new ListNBT())
-                .put(ScannerMode.ENTITIES.nbtName, new ListNBT());
+                .putList(ScannerMode.BLOCKS.nbtName, new ListNBT())
+                .putList(ScannerMode.BIOMES.nbtName, new ListNBT())
+                .putList(ScannerMode.ENTITIES.nbtName, new ListNBT());
     }
 
     public ScannerItem(Properties properties, int maxScanDistance, int scanWidth) {

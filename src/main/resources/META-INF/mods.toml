@@ -13,8 +13,7 @@ issueTrackerURL="https://github.com/Cubicpath/CubicTools/issues"
     credits="Forge, and the Modding Community!"
     authors = "Cubicpath"
     description = '''
-    Random assortment of useful things made by Cubicpath.
-'''
+    Random assortment of useful things made by Cubicpath.'''
 
 [[dependencies.cubicthings]]
     modId = "forge"

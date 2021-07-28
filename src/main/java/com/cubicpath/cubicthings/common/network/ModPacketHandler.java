@@ -7,13 +7,13 @@ package com.cubicpath.cubicthings.common.network;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkRegistry;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fml.network.*;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class ModPacketHandler {
     /** Increment by 1 for every new packet registered to this instance. */
@@ -28,15 +28,15 @@ public class ModPacketHandler {
     }
 
     public <T extends ModPacket> void registerCPacket(Class<T> messageType, Function<PacketBuffer, T> decoder){
-        registerPacket(messageType, decoder, NetworkDirection.PLAY_TO_SERVER);
+        this.registerPacket(messageType, T::encode, decoder, T::handle, NetworkDirection.PLAY_TO_SERVER);
     }
 
     public <T extends ModPacket> void registerSPacket(Class<T> messageType, Function<PacketBuffer, T> decoder){
-        registerPacket(messageType, decoder, NetworkDirection.PLAY_TO_CLIENT);
+        this.registerPacket(messageType, T::encode, decoder, T::handle, NetworkDirection.PLAY_TO_CLIENT);
     }
 
-    private <T extends ModPacket> void registerPacket(Class<T> messageType, Function<PacketBuffer, T> decoder, NetworkDirection networkDirection){
-        this.channel.registerMessage(this.packetIndex++, messageType, T::encode, decoder, T::handle, Optional.ofNullable(networkDirection));
+    public <T extends ModPacket> void registerPacket(Class<T> messageType, BiConsumer<T, PacketBuffer> encoder,  Function<PacketBuffer, T> decoder, BiConsumer<T, Supplier<NetworkEvent.Context>> handler, NetworkDirection networkDirection){
+        this.channel.registerMessage(this.packetIndex++, messageType, encoder, decoder, handler , Optional.ofNullable(networkDirection));
     }
 
     public void sendToPlayer(ServerPlayerEntity player, ModPacket sPacket){
