@@ -8,7 +8,7 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.command.CommandException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.arguments.EntityArgument;
@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 
 public class HatCommand {
+    private static final SimpleCommandExceptionType PERMISSION_EXCEPTION = new SimpleCommandExceptionType(new TranslationTextComponent("commands.hat.failure.permission"));
     public static final String COMMAND_NAME = "hat";
 
     public static void register(CommandDispatcher<CommandSource> dispatcher){
@@ -46,7 +47,7 @@ public class HatCommand {
         int i = 0;
         if (stack == null) stack = context.getSource().asPlayer().getHeldItemMainhand();
         for (Entity entity: targets){
-            if (!entity.isEntityEqual(context.getSource().assertIsEntity())) throw new CommandException(new TranslationTextComponent("commands.hat.failure.permission"));
+            if (!entity.isEntityEqual(context.getSource().assertIsEntity())) throw PERMISSION_EXCEPTION.create();
             if (entity instanceof LivingEntity && !stack.isEmpty()){
                 if (!((LivingEntity) entity).getItemStackFromSlot(EquipmentSlotType.HEAD).isEmpty()){
                     entity.world.addEntity(new ItemEntity(entity.world, entity.getPosX(), entity.getPosYEye(), entity.getPosZ(), ((LivingEntity) entity).getItemStackFromSlot(EquipmentSlotType.HEAD)));

@@ -26,6 +26,7 @@ public final class CommandInit {
         commandEntries.add(HatCommand::register);
         commandEntries.add(HealCommand::register);
         commandEntries.add(HurtCommand::register);
+        commandEntries.add(ListRegistryCommand::register);
     }
 
 }

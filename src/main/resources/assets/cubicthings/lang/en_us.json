@@ -10,6 +10,8 @@
   "commands.heal.success.multiple": "Healed %s entities from %s damage",
   "commands.hurt.success.single": "Hurt %s for %s damage",
   "commands.hurt.success.multiple": "Hurt %s entities for %s damage",
+  "commands.listRegistry.failure.emptyResults": "No results in '%s' matched with phrase '%s'.",
+  "commands.listRegistry.failure.noSuchRegistry": "Either empty or no registry with name of '%s'.",
 
   "enchantment.cubicthings.magma_vision": "Magma Vision",
   "enchantment.cubicthings.multistep": "Multistep",
