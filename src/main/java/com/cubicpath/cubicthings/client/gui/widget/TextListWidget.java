@@ -48,7 +48,7 @@ public class TextListWidget extends ExtendedList<TextListWidget.TextEntry>{
 
     @Override
     protected void renderBackground(MatrixStack matrixStack) {
-        this.parent.renderBackground(matrixStack);
+        this.parent.renderBackground1(matrixStack);
         this.func_244605_b(this.renderDirtBackground);
         this.func_244606_c(this.renderDarkOutline);
     }

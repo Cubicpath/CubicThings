@@ -389,6 +389,11 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> implements 
     }
 
     @Override
+    public void renderBackground1(MatrixStack matrixStack) {
+        this.renderBackground(matrixStack);
+    }
+
+    @Override
     public void tick() {
         updateWidgets();
         super.tick();

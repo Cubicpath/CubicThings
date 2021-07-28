@@ -142,8 +142,7 @@ public class ConfigScreen extends Screen implements ITextListHolder {
                         ((ForgeConfigSpec.ConfigValue<Float>) configValue).set(Float.valueOf(valueInput));
                     } else if (valueClazz == Double.class) {
                         ((ForgeConfigSpec.ConfigValue<Double>) configValue).set(Double.valueOf(valueInput));
-                    }
-                    else if (valueClazz == Boolean.class) {
+                    } else if (valueClazz == Boolean.class) {
                         boolean isTruthy = valueInput.equalsIgnoreCase("true") || valueInput.equalsIgnoreCase("yes") || valueInput.equalsIgnoreCase("y") || valueInput.equalsIgnoreCase("t") || (StringUtils.isNumeric(valueInput) && Byte.parseByte(valueInput) == 1);
                         boolean isFalsy = valueInput.equalsIgnoreCase("false") || valueInput.equalsIgnoreCase("no") || valueInput.equalsIgnoreCase("n") || valueInput.equalsIgnoreCase("f") || (StringUtils.isNumeric(valueInput) && Byte.parseByte(valueInput) == 0);
                         if (isTruthy || isFalsy) ((ForgeConfigSpec.ConfigValue<Boolean>) configValue).set(isTruthy && !isFalsy);
@@ -255,6 +254,11 @@ public class ConfigScreen extends Screen implements ITextListHolder {
     @Override
     public void renderBackground(MatrixStack matrixStack) {
         super.renderBackground(matrixStack);
+    }
+
+    @Override
+    public void renderBackground1(MatrixStack matrixStack) {
+        this.renderBackground(matrixStack);
     }
 
     public void renderForeground(MatrixStack matrixStack){

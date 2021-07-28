@@ -17,5 +17,6 @@ public interface ITextListHolder extends IScreen {
 
     <T extends ExtendedList.AbstractListEntry<T>> void buildTextList(Consumer<T> textListViewConsumer, BiFunction<String, Integer, T> newEntry);
 
-    void renderBackground(MatrixStack matrixStack);
+    // Calling it renderBackground cause AbstractMethodError due to compiler confusion between super method from Screen class and super method from this interface
+    void renderBackground1(MatrixStack matrixStack);
 }
