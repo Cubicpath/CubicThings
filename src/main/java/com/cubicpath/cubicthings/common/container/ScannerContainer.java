@@ -5,39 +5,40 @@
 package com.cubicpath.cubicthings.common.container;
 
 import com.cubicpath.cubicthings.core.init.ContainerInit;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
+
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class ScannerContainer extends Container {
-    public PlayerInventory inventory;
+public class ScannerContainer extends AbstractContainerMenu {
+    public Inventory inventory;
     public ItemStack sourceItemStack;
 
-    public ScannerContainer(@Nullable ContainerType<?> type, int id) {
+    public ScannerContainer(@Nullable MenuType<?> type, int id) {
         super(type, id);
     }
 
     /**
-     * Client-Side creation from {@link net.minecraftforge.fml.network.NetworkHooks#openGui NetworkHooks#openGui}
+     * Client-Side creation from {@link net.minecraftforge.fmllegacy.network.NetworkHooks#openGui NetworkHooks#openGui}
      *
-     * @param windowId if of the window
-     * @param inventory Player inventory at time of creation.
-     * @param data Data passed along by the server.
+     * @param windowId id of the window
+     * @param inventory Player's inventory at time of creation.
+     * @param data Extra data passed along by the server.
      */
-    public ScannerContainer(int windowId, PlayerInventory inventory, @Nullable PacketBuffer data){
+    public ScannerContainer(int windowId, Inventory inventory, @Nullable FriendlyByteBuf data){
         this(ContainerInit.SCANNER.get(), windowId);
         this.inventory = inventory;
-        if (data != null) sourceItemStack = data.readItemStack();
+        if (data != null) sourceItemStack = data.readItem();
     }
 
     @Override
-    public boolean canInteractWith(@Nonnull PlayerEntity playerIn) {
+    public boolean stillValid(@Nonnull Player playerIn) {
         return true;
     }
 }

@@ -4,7 +4,7 @@
 
 package com.cubicpath.cubicthings.common.item;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 public interface IDefaultNBTHolder {
     void setupNBT(ItemStack stack);

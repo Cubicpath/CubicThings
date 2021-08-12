@@ -11,21 +11,21 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Builder wrapper for {@link CompoundNBT} objects.
+ * Builder wrapper for {@link CompoundTag} objects.
  *
  * @since 1.0
  * @author Cubicpath
  */
-public class NBTBuilder {
-    private final CompoundNBT data;
+public final class NBTBuilder {
+    private final CompoundTag data;
 
-    /** Static method for quickly getting an empty {@link CompoundNBT} object. */
-    public static CompoundNBT getEmptyNBT(){
-        return new CompoundNBT();
+    /** Static method for quickly getting an empty {@link CompoundTag} object. */
+    public static CompoundTag getEmptyNBT(){
+        return new CompoundTag();
     }
 
     /**
-     * Construct {@link NBTBuilder} with a new {@link CompoundNBT}. <br>
+     * Construct {@link NBTBuilder} with a new {@link CompoundTag}. <br>
      * <br>
      * <i>NOTE: Using the {@linkplain #build()} method is not required if using this builder to modify NBT Objects as opposed to creating.</i>
      */
@@ -34,30 +34,30 @@ public class NBTBuilder {
     }
 
     /**
-     * Construct {@link NBTBuilder} with given {@link CompoundNBT} data. Replaces null with {@link #getEmptyNBT()} data. <br>
+     * Construct {@link NBTBuilder} with given {@link CompoundTag} data. Replaces null with {@link #getEmptyNBT()} data. <br>
      * <br>
      * <i>NOTE: Using the {@linkplain #build()} method is not required if using this builder to modify NBT Objects as opposed to creating.</i>
      */
-    public NBTBuilder(@Nullable CompoundNBT data) {
+    public NBTBuilder(@Nullable CompoundTag data) {
         this.data = data != null ? data : getEmptyNBT();
     }
 
-    /** Exposes corresponding {@link CompoundNBT} method and returns self. */
-    public NBTBuilder put(String key, INBT value){
+    /** Exposes corresponding {@link CompoundTag} method and returns self. */
+    public NBTBuilder put(String key, Tag value){
         this.data.put(key, value);
         return this;
     }
 
-    /** <p>Exposes corresponding {@link CompoundNBT} method and returns self.</p>
+    /** <p>Exposes corresponding {@link CompoundTag} method and returns self.</p>
      *
-     * tag_id = 1 (stored {@link ByteNBT})
+     * tag_id = 1 (stored {@link ByteTag})
      */
     public NBTBuilder putBoolean(String key, boolean value){
         this.data.putBoolean(key, value);
         return this;
     }
 
-    /** <p>Exposes corresponding {@link CompoundNBT} method and returns self.</p>
+    /** <p>Exposes corresponding {@link CompoundTag} method and returns self.</p>
      *
      * tag_id = 1
      */
@@ -70,12 +70,12 @@ public class NBTBuilder {
      * <p>Simple method to avoid raw usage of {@linkplain #put}; returns self.</p>
      * tag_id = 1
      */
-    public NBTBuilder putByte(String key, ByteNBT value){
+    public NBTBuilder putByte(String key, ByteTag value){
         this.data.put(key, value);
         return this;
     }
 
-    /** <p>Exposes corresponding {@link CompoundNBT} method and returns self.</p>
+    /** <p>Exposes corresponding {@link CompoundTag} method and returns self.</p>
      *
      * tag_id = 2
      */
@@ -88,12 +88,12 @@ public class NBTBuilder {
      * <p>Simple method to avoid raw usage of {@linkplain #put}; returns self.</p>
      * tag_id = 2
      */
-    public NBTBuilder putShort(String key, ShortNBT value){
+    public NBTBuilder putShort(String key, ShortTag value){
         this.data.put(key, value);
         return this;
     }
 
-    /** <p>Exposes corresponding {@link CompoundNBT} method and returns self.</p>
+    /** <p>Exposes corresponding {@link CompoundTag} method and returns self.</p>
      *
      * tag_id = 3
      */
@@ -106,12 +106,12 @@ public class NBTBuilder {
      * <p>Simple method to avoid raw usage of {@linkplain #put}; returns self.</p>
      * tag_id = 3
      */
-    public NBTBuilder putInt(String key, IntNBT value){
+    public NBTBuilder putInt(String key, IntTag value){
         this.data.put(key, value);
         return this;
     }
 
-    /** <p>Exposes corresponding {@link CompoundNBT} method and returns self.</p>
+    /** <p>Exposes corresponding {@link CompoundTag} method and returns self.</p>
      *
      * tag_id = 4
      */
@@ -124,12 +124,12 @@ public class NBTBuilder {
      * <p>Simple method to avoid raw usage of {@linkplain #put}; returns self.</p>
      * tag_id = 4
      */
-    public NBTBuilder putLong(String key, LongNBT value){
+    public NBTBuilder putLong(String key, LongTag value){
         this.data.put(key, value);
         return this;
     }
 
-    /** <p>Exposes corresponding {@link CompoundNBT} method and returns self.</p>
+    /** <p>Exposes corresponding {@link CompoundTag} method and returns self.</p>
      *
      * tag_id = 5
      */
@@ -142,12 +142,12 @@ public class NBTBuilder {
      * <p>Simple method to avoid raw usage of {@linkplain #put}; returns self.</p>
      * tag_id = 5
      */
-    public NBTBuilder putFloat(String key, FloatNBT value){
+    public NBTBuilder putFloat(String key, FloatTag value){
         this.data.put(key, value);
         return this;
     }
 
-    /** <p>Exposes corresponding {@link CompoundNBT} method and returns self.</p>
+    /** <p>Exposes corresponding {@link CompoundTag} method and returns self.</p>
      *
      * tag_id = 6
      */
@@ -160,12 +160,12 @@ public class NBTBuilder {
      * <p>Simple method to avoid raw usage of {@linkplain #put}; returns self.</p>
      * tag_id = 6
      */
-    public NBTBuilder putDouble(String key, DoubleNBT value){
+    public NBTBuilder putDouble(String key, DoubleTag value){
         this.data.put(key, value);
         return this;
     }
 
-    /** <p>Exposes corresponding {@link CompoundNBT} method and returns self.</p>
+    /** <p>Exposes corresponding {@link CompoundTag} method and returns self.</p>
      *
      * tag_id = 7
      */
@@ -178,12 +178,12 @@ public class NBTBuilder {
      * <p>Simple method to avoid raw usage of {@linkplain #put}; returns self.</p>
      * tag_id = 7
      */
-    public NBTBuilder putByteArray(String key, ByteArrayNBT value){
+    public NBTBuilder putByteArray(String key, ByteArrayTag value){
         this.data.put(key, value);
         return this;
     }
 
-    /** <p>Exposes corresponding {@link CompoundNBT} method and returns self.</p>
+    /** <p>Exposes corresponding {@link CompoundTag} method and returns self.</p>
      *
      * tag_id = 8
      */
@@ -196,7 +196,7 @@ public class NBTBuilder {
      * <p>Simple method to avoid raw usage of {@linkplain #put}; returns self.</p>
      * tag_id = 8
      */
-    public NBTBuilder putString(String key, StringNBT value){
+    public NBTBuilder putString(String key, StringTag value){
         this.data.put(key, value);
         return this;
     }
@@ -205,7 +205,7 @@ public class NBTBuilder {
      * <p>Simple method to avoid raw usage of {@linkplain #put}; returns self.</p>
      * tag_id = 9
      */
-    public NBTBuilder putList(String key, ListNBT value){
+    public NBTBuilder putList(String key, ListTag value){
         this.data.put(key, value);
         return this;
     }
@@ -214,21 +214,21 @@ public class NBTBuilder {
      * <p>Simple method to avoid raw usage of {@linkplain #put}; returns self.</p>
      * tag_id = 10
      */
-    public NBTBuilder putCompound(String key, CompoundNBT value){
+    public NBTBuilder putCompound(String key, CompoundTag value){
         this.data.put(key, value);
         return this;
     }
 
-    /** <p>Exposes corresponding {@link CompoundNBT} method and returns self.</p>
+    /** <p>Exposes corresponding {@link CompoundTag} method and returns self.</p>
      *
-     * tag_id = 11 (internally stored as {@link IntArrayNBT})
+     * tag_id = 11 (internally stored as {@link IntArrayTag})
      */
     public NBTBuilder putUniqueId(String key, UUID value){
-        this.data.putUniqueId(key, value);
+        this.data.putUUID(key, value);
         return this;
     }
 
-    /** <p>Exposes corresponding {@link CompoundNBT} method and returns self.</p>
+    /** <p>Exposes corresponding {@link CompoundTag} method and returns self.</p>
      *
      * tag_id = 11
      */
@@ -237,7 +237,7 @@ public class NBTBuilder {
         return this;
     }
 
-    /** <p>Exposes corresponding {@link CompoundNBT} method and returns self.</p>
+    /** <p>Exposes corresponding {@link CompoundTag} method and returns self.</p>
      *
      * tag_id = 11
      */
@@ -250,12 +250,12 @@ public class NBTBuilder {
      * <p>Simple method to avoid raw usage of {@linkplain #put}; returns self.</p>
      * tag_id = 11
      */
-    public NBTBuilder putIntArray(String key, IntArrayNBT value){
+    public NBTBuilder putIntArray(String key, IntArrayTag value){
         this.data.put(key, value);
         return this;
     }
 
-    /** <p>Exposes corresponding {@link CompoundNBT} method and returns self.</p>
+    /** <p>Exposes corresponding {@link CompoundTag} method and returns self.</p>
      *
      * tag_id = 12
      */
@@ -264,7 +264,7 @@ public class NBTBuilder {
         return this;
     }
 
-    /** <p>Exposes corresponding {@link CompoundNBT} method and returns self.</p>
+    /** <p>Exposes corresponding {@link CompoundTag} method and returns self.</p>
      *
      * tag_id = 12
      */
@@ -277,17 +277,17 @@ public class NBTBuilder {
      * <p>Simple method to avoid raw usage of {@linkplain #put}; returns self.</p>
      * tag_id = 12
      */
-    public NBTBuilder putLongArray(String key, LongArrayNBT value){
+    public NBTBuilder putLongArray(String key, LongArrayTag value){
         this.data.put(key, value);
         return this;
     }
 
     /**
-     * Finish building and return the {@link CompoundNBT} value. <br>
+     * Finish building and return the {@link CompoundTag} value. <br>
      * <br>
      * <i>NOTE: This is not required if using the builder to modify NBT data as opposed to creating.</i>
      */
-    public CompoundNBT build(){
+    public CompoundTag build(){
         return this.data;
     }
 

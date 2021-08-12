@@ -5,7 +5,7 @@
 /**
  * Custom screens used for GUIs.
  *
- * @see net.minecraft.client.gui.screen.Screen
+ * @see net.minecraft.client.gui.screens.Screen
  */
 @ParametersAreNonnullByDefault
 package com.cubicpath.cubicthings.client.gui.screen;

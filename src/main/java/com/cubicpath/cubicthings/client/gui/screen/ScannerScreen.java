@@ -5,6 +5,7 @@
 package com.cubicpath.cubicthings.client.gui.screen;
 
 import com.cubicpath.cubicthings.CubicThings;
+import com.cubicpath.cubicthings.client.gui.widget.AbstractTextList;
 import com.cubicpath.cubicthings.client.gui.widget.TextListWidget;
 import com.cubicpath.cubicthings.common.container.ScannerContainer;
 import com.cubicpath.cubicthings.common.item.ScannerItem;
@@ -13,34 +14,38 @@ import com.cubicpath.cubicthings.common.network.CScannerTargetPacket;
 import com.cubicpath.cubicthings.core.init.NetworkInit;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.platform.Lighting;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.entity.player.RemoteClientPlayerEntity;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.screen.inventory.ContainerScreen;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.gui.widget.list.ExtendedList;
+import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3f;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.AbstractSelectionList;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.player.RemotePlayer;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.entity.EntityRendererManager;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.Pose;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Quaternion;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.Biomes;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.lwjgl.glfw.GLFW;
 
@@ -55,43 +60,41 @@ import java.util.function.Consumer;
  * @since 0.2.2
  * @author Cubicpath
  */
-@SuppressWarnings("deprecation")
-public class ScannerScreen extends ContainerScreen<ScannerContainer> implements ITextListHolder {
+public class ScannerScreen extends AbstractContainerScreen<ScannerContainer> implements ITextListHolder {
     /** The location of the inventory background texture */
     protected static final ResourceLocation SCANNER_SCREEN_TEXTURE = new ResourceLocation(CubicThings.MODID, "textures/gui/container/scanner.png");
 
     /** Non-persistent memory of the last object selected */
     @Nullable
     protected static Object renderTarget = null;
-
+    
     protected boolean clickedTargetField = false;
     protected float renderYaw = 0.0F;
     protected int mouseX, mouseY;
-
     protected final ItemStack itemStack;
-    protected final ClientWorld world;
+    protected final ClientLevel world;
     protected Button targetAddButton, targetRemoveButton, targetsClearButton, targetModeButton;
-    protected TextFieldWidget targetInputField;
-    protected TextListWidget targetList;
+    protected EditBox targetInputField;
+    protected AbstractTextList<?> targetList;
 
-    public ScannerScreen(ScannerContainer screenContainer, PlayerInventory inventory, ITextComponent titleIn) {
+    public ScannerScreen(ScannerContainer screenContainer, Inventory inventory, Component titleIn) {
         super(screenContainer, inventory, titleIn);
         this.itemStack = screenContainer.sourceItemStack;
-        this.world = (ClientWorld)inventory.player.world;
-        this.xSize = 176;
-        this.ySize = 166;
-        this.titleX = 9;
+        this.world = (ClientLevel) inventory.player.level;
+        this.imageWidth = 176;
+        this.imageHeight = 166;
+        this.titleLabelX = 9;
     }
 
-    protected static LivingEntity createNewDummyPlayer(ClientWorld world){
-        RemoteClientPlayerEntity dummyPlayer = new RemoteClientPlayerEntity(world, new GameProfile(null, "Player"));
+    protected static LivingEntity createNewDummyPlayer(ClientLevel world){
+        RemotePlayer dummyPlayer = new RemotePlayer(world, new GameProfile(null, "Player"));
         dummyPlayer.setCustomNameVisible(false);
         return dummyPlayer;
     }
 
     protected Set<String> getStoredTargetSet(){
         Set<String> targetSet = new HashSet<>();
-        getScannerMode().getTargetList(this.itemStack).forEach(stringNBT -> targetSet.add(stringNBT.getString()));
+        getScannerMode().getTargetList(this.itemStack).forEach(stringNBT -> targetSet.add(stringNBT.getAsString()));
         return targetSet;
     }
 
@@ -99,48 +102,38 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> implements 
         return ScannerItem.getScannerMode(this.itemStack);
     }
 
-    protected ITextComponent currentTargetText() {
-        return new TranslationTextComponent("gui.cubicthings.scannerMenu.target", getScannerMode().toTitleCase());
+    protected Component currentTargetValue() {
+        return new TranslatableComponent("gui.cubicthings.scannerMenu.target", getScannerMode().toTitleCase());
     }
 
-    public FontRenderer getFontRenderer()
-    {
+    public Font getFontRenderer() {
         return this.font;
     }
 
-    public <T extends ExtendedList.AbstractListEntry<T>> void buildTextList(Consumer<T> textListViewConsumer, BiFunction<String, Integer, T> newEntry) {
-        getStoredTargetSet().stream().sorted().forEach(string -> textListViewConsumer.accept(newEntry.apply(string, null)));
+    public <T extends AbstractSelectionList.Entry<T>> void buildTextList(Consumer<T> textListViewConsumer, BiFunction<Component, String, T> newEntry) {
+        getStoredTargetSet().stream().sorted().forEach(string -> textListViewConsumer.accept(newEntry.apply(Component.nullToEmpty(string), "true")));
     }
 
     public void updateWidgets(){
-        boolean validInput = !this.targetInputField.getText().trim().isEmpty() && ResourceLocation.isResouceNameValid(this.targetInputField.getText().toLowerCase().trim());
-        ResourceLocation resourceLocation = validInput ? new ResourceLocation(this.targetInputField.getText().toLowerCase().trim()) : null;
+        boolean validInput = !this.targetInputField.getValue().trim().isEmpty() && ResourceLocation.isValidResourceLocation(this.targetInputField.getValue().toLowerCase().trim());
+        ResourceLocation resourceLocation = validInput ? new ResourceLocation(this.targetInputField.getValue().toLowerCase().trim()) : null;
 
         if (!this.clickedTargetField && this.targetInputField.isFocused()) {
-            this.targetInputField.setText("");
+            this.targetInputField.setValue("");
             this.targetInputField.setTextColor(0xDDDD44);
             this.clickedTargetField = true;
         }
 
-        switch (getScannerMode()){
-            case BLOCKS: {
+        switch (getScannerMode()) {
+            case BLOCKS -> {
                 Block block = ForgeRegistries.BLOCKS.getValue(resourceLocation);
-                if (block != null){
-                    renderTarget = block;
-                } else renderTarget = Blocks.AIR;
-
-                break;
+                renderTarget = Objects.requireNonNullElse(block, Blocks.AIR);
             }
-
-            case BIOMES:
+            case BIOMES -> {
                 Biome biome = ForgeRegistries.BIOMES.getValue(resourceLocation);
-                if (biome != null){
-                    renderTarget = biome;
-                } else renderTarget = Biomes.THE_VOID;
-
-                break;
-
-            case ENTITIES: {
+                renderTarget = Objects.requireNonNullElse(biome, Biomes.THE_VOID);
+            }
+            case ENTITIES -> {
                 EntityType<?> entityType = ForgeRegistries.ENTITIES.getValue(resourceLocation);
                 if (entityType != null && resourceLocation != null) {
                     Entity newEntity = entityType.create(this.world);
@@ -150,18 +143,16 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> implements 
                     else if (newEntity instanceof LivingEntity)
                         renderTarget = newEntity;
                 } else renderTarget = EntityType.ITEM;
-
-                break;
             }
         }
 
-        this.targetAddButton.setMessage(new TranslationTextComponent("gui.cubicthings.scannerMenu.add", getScannerMode().toTitleCase().replace("ies", "y").concat("\t").replace("s\t", "").trim()));
-        this.targetAddButton.active = validInput && getStoredTargetSet().stream().noneMatch((string) -> string.equals(this.targetInputField.getText().toLowerCase().trim()) || string.replaceFirst("minecraft:", "").equals(this.targetInputField.getText().toLowerCase().trim()));
+        this.targetAddButton.setMessage(new TranslatableComponent("gui.cubicthings.scannerMenu.add", getScannerMode().toTitleCase().replace("ies", "y").concat("\t").replace("s\t", "").trim()));
+        this.targetAddButton.active = validInput && getStoredTargetSet().stream().noneMatch((string) -> string.equals(this.targetInputField.getValue().toLowerCase().trim()) || string.replaceFirst("minecraft:", "").equals(this.targetInputField.getValue().toLowerCase().trim()));
 
-        this.targetRemoveButton.setMessage(new TranslationTextComponent("gui.cubicthings.scannerMenu.remove", getScannerMode().toTitleCase().replace("ies", "y").concat("\t").replace("s\t", "").trim()));
-        this.targetRemoveButton.active = validInput && getStoredTargetSet().stream().anyMatch((string) -> string.equals(this.targetInputField.getText().toLowerCase().trim()) || string.replaceFirst("minecraft:", "").equals(this.targetInputField.getText().toLowerCase().trim()));
+        this.targetRemoveButton.setMessage(new TranslatableComponent("gui.cubicthings.scannerMenu.remove", getScannerMode().toTitleCase().replace("ies", "y").concat("\t").replace("s\t", "").trim()));
+        this.targetRemoveButton.active = validInput && getStoredTargetSet().stream().anyMatch((string) -> string.equals(this.targetInputField.getValue().toLowerCase().trim()) || string.replaceFirst("minecraft:", "").equals(this.targetInputField.getValue().toLowerCase().trim()));
 
-        this.targetsClearButton.setMessage(new TranslationTextComponent("gui.cubicthings.scannerMenu.clear", getScannerMode().toTitleCase()));
+        this.targetsClearButton.setMessage(new TranslatableComponent("gui.cubicthings.scannerMenu.clear", getScannerMode().toTitleCase()));
         this.targetsClearButton.active = getStoredTargetSet().size() > 0;
 
         this.targetList.refreshList();
@@ -173,73 +164,81 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> implements 
         //TODO: Render preview for Biomes
 
         this.renderYaw = this.renderYaw + 0.015F;
-        if (renderTarget instanceof Block) {
-            Block block = (Block)renderTarget;
-            getMinecraft().getItemRenderer().renderItemAndEffectIntoGUI(block.asItem().getDefaultInstance(),this.guiLeft + 120, this.guiTop + 55);
-        }
-        else if (renderTarget instanceof Entity) {
-            Entity entity = (Entity)renderTarget;
-
-            RenderSystem.pushMatrix();
-            RenderSystem.translatef((float) posX, (float) posY, 1050.0F);
-            RenderSystem.scalef(1.0F, 1.0F, -1.0F);
-            MatrixStack matrixstack = new MatrixStack();
-            matrixstack.translate(0.0D, 0.0D, 1000.0D);
-            matrixstack.scale((float) scale, (float) scale, (float) scale);
+        if (renderTarget instanceof Block block) {
+            getMinecraft().getItemRenderer().renderAndDecorateFakeItem(block.asItem().getDefaultInstance(),this.leftPos + 120, this.topPos + 55);
+        } else if (renderTarget instanceof Entity entity) {
+            // Setup position
+            PoseStack poseStack = RenderSystem.getModelViewStack();
+            poseStack.pushPose();
+            poseStack.translate(posX, posY, 1050.0);
+            poseStack.scale(1.0F, 1.0F, -1.0F);
+            RenderSystem.applyModelViewMatrix();
+            PoseStack poseStack1 = new PoseStack();
+            poseStack1.translate(0.0D, 0.0D, 1000.0D);
+            poseStack1.scale((float) scale, (float) scale, (float) scale);
             Quaternion quaternion = Vector3f.ZN.rotationDegrees(175.0F);
             Quaternion quaternion1 = Vector3f.XP.rotationDegrees(0);
-            quaternion.multiply(quaternion1);
-            matrixstack.rotate(quaternion);
+            quaternion.mul(quaternion1);
+            poseStack1.mulPose(quaternion);
+
+            // Set entity rotation
             boolean isCustomNameVisible = entity.isCustomNameVisible();
             float renderYawOffset = 0.0F;
-            float rotationYaw = entity.rotationYaw;
+            float rotationYaw = entity.getXRot();
             float rotationYawHead = 0.0F;
-            float rotationPitch = entity.rotationPitch;
+            float rotationPitch = entity.getYRot();
             entity.setCustomNameVisible(false);
-            entity.rotationYaw = 180.0F + this.renderYaw * 40.0F;
-            entity.rotationPitch = 0.0F;
-            if (entity instanceof LivingEntity) {
-                renderYawOffset = ((LivingEntity) entity).renderYawOffset;
-                rotationYawHead = ((LivingEntity) entity).rotationYawHead;
-                ((LivingEntity) entity).renderYawOffset = 180.0F + this.renderYaw * 20.0F;
-                ((LivingEntity) entity).rotationYawHead = ((LivingEntity) entity).renderYawOffset;
+            entity.setYRot(180.0F + this.renderYaw * 40.0F);
+            entity.setXRot(0.0F);
+            if (entity instanceof LivingEntity livingEntity) {
+                renderYawOffset = livingEntity.yBodyRot;
+                rotationYawHead = livingEntity.yHeadRot;
+                livingEntity.yBodyRot = 180.0F + this.renderYaw * 20.0F;
+                livingEntity.yHeadRot = livingEntity.yBodyRot;
             }
-            EntityRendererManager entityrenderermanager = getMinecraft().getRenderManager();
-            quaternion1.conjugate();
-            entityrenderermanager.setCameraOrientation(quaternion1);
-            entityrenderermanager.setRenderShadow(false);
-            IRenderTypeBuffer.Impl irendertypebuffer$impl = getMinecraft().getRenderTypeBuffers().getBufferSource();
-            RenderSystem.runAsFancy(() -> {
-                entityrenderermanager.renderEntityStatic(entity, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F, matrixstack, irendertypebuffer$impl, 0xF000F0);
-            });
-            irendertypebuffer$impl.finish();
-            entityrenderermanager.setRenderShadow(true);
+
+            // Render entity
+            EntityRenderDispatcher entityRenderDispatcher = getMinecraft().getEntityRenderDispatcher();
+            quaternion1.conj();
+            entityRenderDispatcher.overrideCameraOrientation(quaternion1);
+            entityRenderDispatcher.setRenderShadow(false);
+            MultiBufferSource.BufferSource multibuffersource$buffersource = getMinecraft().renderBuffers().bufferSource();
+            entityRenderDispatcher.render(entity, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F, poseStack1, multibuffersource$buffersource, 0xF000F0);
+            multibuffersource$buffersource.endBatch();
+            entityRenderDispatcher.setRenderShadow(true);
+
+            // Restore entity's original properties
             entity.setCustomNameVisible(isCustomNameVisible);
-            entity.rotationYaw = rotationYaw;
-            entity.rotationPitch = rotationPitch;
-            if (entity instanceof LivingEntity) {
-                ((LivingEntity) entity).renderYawOffset = renderYawOffset;
-                ((LivingEntity) entity).rotationYawHead = rotationYawHead;
+            entity.setXRot(rotationYaw);
+            entity.setYRot(rotationPitch);
+            if (entity instanceof LivingEntity livingEntity) {
+                livingEntity.yBodyRot = renderYawOffset;
+                livingEntity.yHeadRot = rotationYawHead;
+                livingEntity.yHeadRotO = rotationYawHead;
             }
-            RenderSystem.popMatrix();
+
+            // End
+            poseStack.popPose();
+            RenderSystem.applyModelViewMatrix();
+            Lighting.setupFor3DItems();
         }
     }
 
     @Override
     protected void init() {
         super.init();
-        getMinecraft().keyboardListener.enableRepeatEvents(true);
+        getMinecraft().keyboardHandler.setSendRepeatsToGui(true);
 
-        this.targetInputField = new TextFieldWidget(this.font, this.guiLeft + 10, this.guiTop + 27, 72, 8, ITextComponent.getTextComponentOrEmpty("Target Field"));
-        this.targetInputField.setMaxStringLength(256);
+        this.targetInputField = new EditBox(this.font, this.leftPos + 10, this.topPos + 27, 72, 8, Component.nullToEmpty("Target Field"));
+        this.targetInputField.setMaxLength(256);
         this.targetInputField.setTextColor(0x888888);
-        this.targetInputField.setText("Target Field");
-        addButton(this.targetInputField);
+        this.targetInputField.setValue("Target Field");
+        addRenderableWidget(this.targetInputField);
 
-        int slotIndex = this.container.inventory.getSlotFor(container.sourceItemStack);
+        int slotIndex = this.menu.inventory.findSlotMatchingItem(this.menu.sourceItemStack);
 
-        this.targetAddButton = addButton(new Button(this.guiLeft + 8, this.guiTop + 40, 76, 14, new TranslationTextComponent("gui.cubicthings.scannerMenu.add", getScannerMode().toTitleCase().replace("ies", "y").concat("\t").replace("s\t", "").trim()), (button) -> {
-            String input = new ResourceLocation(this.targetInputField.getText().toLowerCase().replace(" ","")).toString();
+        this.targetAddButton = addRenderableWidget(new Button(this.leftPos + 8, this.topPos + 40, 76, 14, new TranslatableComponent("gui.cubicthings.scannerMenu.add", getScannerMode().toTitleCase().replace("ies", "y").concat("\t").replace("s\t", "").trim()), (button) -> {
+            String input = new ResourceLocation(this.targetInputField.getValue().toLowerCase().replace(" ","")).toString();
             NetworkInit.PACKET_HANDLER.sendToServer(new CScannerTargetPacket(input, slotIndex, (byte) 1));
             ScannerItem.addTarget(this.itemStack, this.getScannerMode(), input);
             updateWidgets();
@@ -249,8 +248,8 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> implements 
         }));
         this.targetAddButton.active = false;
 
-        this.targetRemoveButton = addButton(new Button(this.guiLeft + 8, this.guiTop + 52, 76, 14, new TranslationTextComponent("gui.cubicthings.scannerMenu.remove", getScannerMode().toTitleCase().replace("ies", "y").concat("\t").replace("s\t", "").trim()), (button) -> {
-            String input = new ResourceLocation(this.targetInputField.getText().toLowerCase().replace(" ","")).toString();
+        this.targetRemoveButton = addRenderableWidget(new Button(this.leftPos + 8, this.topPos + 52, 76, 14, new TranslatableComponent("gui.cubicthings.scannerMenu.remove", getScannerMode().toTitleCase().replace("ies", "y").concat("\t").replace("s\t", "").trim()), (button) -> {
+            String input = new ResourceLocation(this.targetInputField.getValue().toLowerCase().replace(" ","")).toString();
             NetworkInit.PACKET_HANDLER.sendToServer(new CScannerTargetPacket(input, slotIndex, (byte) 2));
             ScannerItem.removeTarget(this.itemStack, this.getScannerMode(), input);
             updateWidgets();
@@ -260,42 +259,57 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> implements 
         }));
         this.targetRemoveButton.active = false;
 
-        this.targetsClearButton = addButton(new Button(this.guiLeft + 8, this.guiTop + 66, 76, 14, new TranslationTextComponent("gui.cubicthings.scannerMenu.clear", getScannerMode().toTitleCase()), (button) -> {
-            String input = new ResourceLocation(this.targetInputField.getText().toLowerCase().replace(" ","")).toString();
+        this.targetsClearButton = addRenderableWidget(new Button(this.leftPos + 8, this.topPos + 66, 76, 14, new TranslatableComponent("gui.cubicthings.scannerMenu.clear", getScannerMode().toTitleCase()), (button) -> {
+            String input = new ResourceLocation(this.targetInputField.getValue().toLowerCase().replace(" ","")).toString();
             NetworkInit.PACKET_HANDLER.sendToServer(new CScannerTargetPacket(input, slotIndex, (byte) 3));
             getScannerMode().getTargetList(this.itemStack).clear();
             updateWidgets();
 
-            this.targetInputField.setText("");
+            this.targetInputField.setValue("");
         }));
         this.targetsClearButton.active = getStoredTargetSet().size() > 0;
 
-        this.targetModeButton = addButton(new Button(this.guiLeft + 6, this.guiTop + 84, 80, 20, currentTargetText(), (button) -> {
+        this.targetModeButton = addRenderableWidget(new Button(this.leftPos + 6, this.topPos + 84, 80, 20, currentTargetValue(), (button) -> {
             ScannerItem.ScannerMode scannerMode;
-            try { scannerMode = ScannerItem.ScannerMode.values()[getScannerMode().ordinal() + 1]; }
-            catch (ArrayIndexOutOfBoundsException e) { scannerMode = ScannerItem.ScannerMode.values()[0]; }
+            try { scannerMode = ScannerItem.ScannerMode.values()[getScannerMode().ordinal() + 1];
+            } catch (ArrayIndexOutOfBoundsException e) { scannerMode = ScannerItem.ScannerMode.values()[0]; }
 
             ScannerItem.setScannerMode(this.itemStack, scannerMode);
             NetworkInit.PACKET_HANDLER.sendToServer(new CScannerModePacket(scannerMode, slotIndex));
-            button.setMessage(currentTargetText());
-            this.targetInputField.setText("");
+            button.setMessage(currentTargetValue());
+            this.targetInputField.setValue("");
             updateWidgets();
         }));
         this.targetModeButton.active = true;
 
-        this.targetList = new TextListWidget(this, 156, 50, this.guiLeft + 7, this.guiTop + 109, 2, -2 , this.font.FONT_HEIGHT + 2, 0xCCCCCC, true, false);
+        this.targetList = new TextListWidget(this, 156, 50, this.leftPos + 7, this.topPos + 109, 2, -2 , this.font.lineHeight + 2, 0xCCCCCC, true, false, this.font, targetEntry -> {
+            var oldValue = this.targetInputField.getValue().replaceFirst("minecraft:", "").trim();
+            var newValue = targetEntry.getDisplayText().getString().replaceFirst("minecraft:", "").trim();
+            if (!this.clickedTargetField) {
+                this.targetInputField.setTextColor(0xDDDD44);
+                this.clickedTargetField = true;
+            }
+            this.setFocused(targetInputField);
+            this.targetInputField.setValue(targetEntry.getDisplayText().getString().replaceFirst("minecraft:", "").trim());
+            if (!this.targetInputField.getValue().equals(oldValue))
+                getMinecraft().getSoundManager().play(new SimpleSoundInstance(SoundEvents.UI_BUTTON_CLICK, SoundSource.MASTER, 0.25F, 1.0F, 0, 0, 0));
+            if (newValue.length() > 12)
+                this.targetInputField.moveCursorToEnd();
+            else
+                this.targetInputField.moveCursorToStart();
+        });
 
     }
 
     @Override
     public void onClose() {
         super.onClose();
-        getMinecraft().keyboardListener.enableRepeatEvents(false);
+        getMinecraft().keyboardHandler.setSendRepeatsToGui(false);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (this.targetInputField.isFocused() && this.targetInputField.getVisible()){
+        if (this.targetInputField.isFocused() && this.targetInputField.isVisible()){
             switch (keyCode) {
                 case GLFW.GLFW_KEY_LEFT_SHIFT:
                 case GLFW.GLFW_KEY_LEFT_CONTROL:
@@ -313,14 +327,20 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> implements 
                     this.targetInputField.setCursorPosition(this.targetInputField.getCursorPosition() + 1);
                     break;
                 }
-                case GLFW.GLFW_KEY_ENTER:
-                case GLFW.GLFW_KEY_TAB: {
-                    this.targetInputField.setFocused2(false);
-                    break;
+                case GLFW.GLFW_KEY_ENTER: {
+                    if (this.targetAddButton.isActive())
+                        this.targetAddButton.onPress();
+                    else if (this.targetRemoveButton.isActive())
+                        this.targetRemoveButton.onPress();
 
+                    break;
+                }
+                case GLFW.GLFW_KEY_TAB: {
+                    this.targetInputField.setFocus(false);
+                    break;
                 }
                 case GLFW.GLFW_KEY_BACKSPACE: {
-                    this.targetInputField.deleteFromCursor(-1);
+                    this.targetInputField.deleteChars(-1);
                     break;
                 }
             }
@@ -328,6 +348,11 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> implements 
             return keyCode != GLFW.GLFW_KEY_ESCAPE || super.keyPressed(keyCode, scanCode, modifiers);
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean keyReleased(int mouseX, int mouseY, int button){
+        return super.keyReleased(mouseX, mouseY, button);
     }
 
     @Override
@@ -355,48 +380,40 @@ public class ScannerScreen extends ContainerScreen<ScannerContainer> implements 
     }
 
     @Override
-    protected void drawGuiContainerForegroundLayer(MatrixStack matrixStack, int x, int y) {
-        this.font.drawText(matrixStack, ((TextComponent)this.title).setStyle(this.title.getStyle().setUnderlined(true)), (float)this.titleX, (float)this.titleY, 0x404040);
+    protected void renderLabels(PoseStack poseStack, int mouseX, int mouseY) {
+        this.font.draw(poseStack, ((MutableComponent)this.title).setStyle(this.title.getStyle().setUnderlined(true)), (float)this.titleLabelX, (float)this.titleLabelY, 0x404040);
         // Draw object texts
         if (renderTarget instanceof Block)
-            this.font.drawText(matrixStack, ((Block)renderTarget).getTranslatedName(), 90, 16,  0xBABABA);
+            this.font.draw(poseStack, ((Block)renderTarget).getName(), 90, 16,  0xBABABA);
         else if (renderTarget instanceof Biome)
-            this.font.drawText(matrixStack, new TranslationTextComponent(("biome." + ((Biome) renderTarget).getRegistryName()).replace(':', '.')), 90, 16, 0xBABABA);
+            this.font.draw(poseStack, new TranslatableComponent(("biome." + ((Biome) renderTarget).getRegistryName()).replace(':', '.')), 90, 16, 0xBABABA);
         else if (renderTarget instanceof Entity)
-            this.font.drawText(matrixStack, ((Entity)renderTarget).getDisplayName(), 90, 16, 0xBABABA);
+            this.font.draw(poseStack, ((Entity)renderTarget).getDisplayName(), 90, 16, 0xBABABA);
     }
 
     @Override
-    protected void drawGuiContainerBackgroundLayer(MatrixStack matrixStack, float partialTicks, int x, int y) {
-        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-        Objects.requireNonNull(this.minecraft, "Minecraft cannot be null.").getTextureManager().bindTexture(SCANNER_SCREEN_TEXTURE);
-        this.blit(matrixStack, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
+    protected void renderBg(PoseStack matrixStack, float partialTicks, int x, int y) {
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.setShaderTexture(0, SCANNER_SCREEN_TEXTURE);
+        this.blit(matrixStack, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
         if (renderTarget instanceof Block)
-            drawTargetOnScreen(this.guiLeft + 127, this.guiTop + 98, 1);
+            drawTargetOnScreen(this.leftPos + 127, this.topPos + 98, 1);
         else if (renderTarget instanceof Biome)
-            drawTargetOnScreen(this.guiLeft + 127, this.guiTop + 98, 1);
+            drawTargetOnScreen(this.leftPos + 127, this.topPos + 98, 1);
         else if (renderTarget instanceof Entity)
-            drawTargetOnScreen(this.guiLeft + 127, this.guiTop + 98, (int) MathHelper.clamp(this.ySize / Math.max(((Entity)renderTarget).getSize(Pose.STANDING).width * 3, ((Entity)renderTarget).getSize(Pose.STANDING).height * 3), this.ySize / 10.0F, this.ySize / 4.0F));
+            drawTargetOnScreen(this.leftPos + 127, this.topPos + 98, (int) Mth.clamp(this.imageHeight / Math.max(((Entity)renderTarget).getDimensions(Pose.STANDING).width * 3, ((Entity)renderTarget).getDimensions(Pose.STANDING).height * 3), this.imageHeight / 10.0F, this.imageWidth / 4.0F));
     }
-
+    
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks){
-        this.renderBackground(matrixStack);
+    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTicks){
+        this.renderBackground(poseStack);
+        this.updateWidgets();
         this.mouseX = mouseX;
         this.mouseY = mouseY;
-        this.targetList.render(matrixStack, mouseX, mouseY, partialTicks);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
-    }
-
-    @Override
-    public void renderBackground1(MatrixStack matrixStack) {
-        this.renderBackground(matrixStack);
-    }
-
-    @Override
-    public void tick() {
-        updateWidgets();
-        super.tick();
+        this.targetList.render(poseStack, mouseX, mouseY, partialTicks);
+        //this.renderLabels(poseStack, mouseX, mouseY);
+        super.render(poseStack, mouseX, mouseY, partialTicks);
     }
 
 }

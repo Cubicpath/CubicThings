@@ -4,11 +4,11 @@
 
 package com.cubicpath.cubicthings.common.network;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.network.*;
-import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.fmllegacy.network.*;
+import net.minecraftforge.fmllegacy.network.simple.SimpleChannel;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -27,24 +27,24 @@ public class ModPacketHandler {
                 () -> this.protocolVersion, this.protocolVersion::equals, this.protocolVersion::equals);
     }
 
-    public <T extends ModPacket> void registerCPacket(Class<T> messageType, Function<PacketBuffer, T> decoder){
+    public <T extends ModPacket> void registerCPacket(Class<T> messageType, Function<FriendlyByteBuf, T> decoder){
         this.registerPacket(messageType, T::encode, decoder, T::handle, NetworkDirection.PLAY_TO_SERVER);
     }
 
-    public <T extends ModPacket> void registerSPacket(Class<T> messageType, Function<PacketBuffer, T> decoder){
+    public <T extends ModPacket> void registerSPacket(Class<T> messageType, Function<FriendlyByteBuf, T> decoder){
         this.registerPacket(messageType, T::encode, decoder, T::handle, NetworkDirection.PLAY_TO_CLIENT);
     }
 
-    public <T extends ModPacket> void registerPacket(Class<T> messageType, BiConsumer<T, PacketBuffer> encoder,  Function<PacketBuffer, T> decoder, BiConsumer<T, Supplier<NetworkEvent.Context>> handler, NetworkDirection networkDirection){
+    public <T> void registerPacket(Class<T> messageType, BiConsumer<T, FriendlyByteBuf> encoder,  Function<FriendlyByteBuf, T> decoder, BiConsumer<T, Supplier<NetworkEvent.Context>> handler, NetworkDirection networkDirection){
         this.channel.registerMessage(this.packetIndex++, messageType, encoder, decoder, handler , Optional.ofNullable(networkDirection));
     }
 
-    public void sendToPlayer(ServerPlayerEntity player, ModPacket sPacket){
+    public void sendToPlayer(ServerPlayer player, ModPacket sPacket){
         this.channel.send(PacketDistributor.PLAYER.with(() -> player), sPacket);
     }
 
-    public void sendToPlayers(ServerPlayerEntity[] players, ModPacket sPacket){
-        for (ServerPlayerEntity player : players) this.channel.send(PacketDistributor.PLAYER.with(() -> player), sPacket);
+    public void sendToPlayers(ServerPlayer[] players, ModPacket sPacket){
+        for (ServerPlayer player : players) this.channel.send(PacketDistributor.PLAYER.with(() -> player), sPacket);
     }
 
     public void sendToAllPlayers(ModPacket sPacket){

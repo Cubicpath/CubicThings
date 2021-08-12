@@ -6,10 +6,10 @@ package com.cubicpath.cubicthings.common.network;
 
 import com.cubicpath.cubicthings.common.item.ScannerItem;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -17,49 +17,39 @@ import java.util.function.Supplier;
 public class CScannerTargetPacket extends ModPacket {
     private final String scanTarget;
     private final int slotIndex;
-    private final byte flag;
+    private final byte opByte;
 
-    public CScannerTargetPacket(PacketBuffer buf) {
+    public CScannerTargetPacket(FriendlyByteBuf buf) {
         super(buf);
-        this.scanTarget = buf.readString(32767);
+        this.scanTarget = buf.readUtf(32767);
         this.slotIndex = buf.readInt();
-        this.flag = buf.readByte();
+        this.opByte = buf.readByte();
     }
 
     /** External packet creation. */
-    public CScannerTargetPacket(String scanTarget, int slotIndex, byte flag) {
+    public CScannerTargetPacket(String scanTarget, int slotIndex, byte opByte) {
         this.scanTarget = scanTarget;
         this.slotIndex = slotIndex;
-        this.flag = flag;
+        this.opByte = opByte;
     }
 
-    public void encode(PacketBuffer buf) {
-        buf.writeString(this.scanTarget);
+    public void encode(FriendlyByteBuf buf) {
+        buf.writeUtf(this.scanTarget);
         buf.writeInt(this.slotIndex);
-        buf.writeByte(this.flag);
+        buf.writeByte(this.opByte);
     }
 
     public void handle(Supplier<NetworkEvent.Context> context) {
         context.get().enqueueWork(() -> {
-            ServerPlayerEntity player = context.get().getSender();
-            ItemStack stack = Objects.requireNonNull(player, "Sender cannot be null.").inventory.getStackInSlot(this.slotIndex);
+            ServerPlayer player = context.get().getSender();
+            ItemStack stack = Objects.requireNonNull(player, "Sender cannot be null.").getInventory().getItem(this.slotIndex);
             ScannerItem.ScannerMode scannerMode = ScannerItem.getScannerMode(stack);
             if (stack.getItem() instanceof ScannerItem){
-                switch(this.flag){
-                    default: throw new IllegalArgumentException("Unhandled byte-value: " + this.flag);
-
-                    case (byte) 1: {
-                        ScannerItem.addTarget(stack, scannerMode, this.scanTarget);
-                        break;
-                    }
-                    case (byte) 2: {
-                        ScannerItem.removeTarget(stack, scannerMode, this.scanTarget);
-                        break;
-                    }
-                    case (byte) 3: {
-                        scannerMode.getTargetList(stack).clear();
-                        break;
-                    }
+                switch (this.opByte) {
+                    default -> throw new IllegalArgumentException("Unhandled byte-operator: " + this.opByte);
+                    case (byte) 1 -> ScannerItem.addTarget(stack, scannerMode, this.scanTarget);
+                    case (byte) 2 -> ScannerItem.removeTarget(stack, scannerMode, this.scanTarget);
+                    case (byte) 3 -> scannerMode.getTargetList(stack).clear();
                 }
             }
         });

@@ -5,11 +5,11 @@
 /**
  * Item objects.
  *
- * @see net.minecraft.item.Item
+ * @see net.minecraft.world.item.Item
  */
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 package com.cubicpath.cubicthings.common.item;
 
-import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import javax.annotation.ParametersAreNonnullByDefault;

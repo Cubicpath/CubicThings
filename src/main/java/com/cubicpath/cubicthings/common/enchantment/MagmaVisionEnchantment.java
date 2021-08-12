@@ -4,18 +4,18 @@
 
 package com.cubicpath.cubicthings.common.enchantment;
 
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentType;
-import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentCategory;
 
 public class MagmaVisionEnchantment extends Enchantment {
 
-    public MagmaVisionEnchantment(Rarity rarityIn, EquipmentSlotType[] slots) {
-        super(rarityIn, EnchantmentType.ARMOR_HEAD, slots);
+    public MagmaVisionEnchantment(Rarity rarityIn, EquipmentSlot[] slots) {
+        super(rarityIn, EnchantmentCategory.ARMOR_HEAD, slots);
     }
 
     @Override
-    public boolean isTreasureEnchantment() {
+    public boolean isTreasureOnly() {
         return true;
     }
 

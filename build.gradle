@@ -4,20 +4,20 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '4.1.+', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
     }
 }
 
 apply plugin: 'net.minecraftforge.gradle'
 
-group = 'com.cubicpath'
-version = "${minecraft_version}-0.2.6"
+group = 'com.cubicpath.cubicthings'
 archivesBaseName = 'cubicthings'
+version = "${minecraft_version}-0.3.0-indev" as Object
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(8) // Java 8.
+java.toolchain.languageVersion = JavaLanguageVersion.of(16) // Java 16.
 
 minecraft {
-    mappings channel: 'snapshot', version: "20210309-${minecraft_version}"
+    mappings channel: 'official', version: "${minecraft_version}"
     //accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg') // Uncomment to activate
 
     runs {

@@ -5,35 +5,32 @@
 package com.cubicpath.cubicthings.common.network;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
-import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.function.Supplier;
 
 public class SStepHeightSyncPacket extends ModPacket {
     private final float data;
 
-    public SStepHeightSyncPacket(PacketBuffer buf) {
+    public SStepHeightSyncPacket(FriendlyByteBuf buf) {
         super(buf);
         this.data = buf.readFloat();
     }
 
-    /** External packet creation. Null sets data to default {@linkplain ClientPlayerEntity#stepHeight} (0.6F) .*/
-    public SStepHeightSyncPacket(@Nullable Float data) {
-        this.data = data != null ? data : 1.0F;
+    public SStepHeightSyncPacket(float data) {
+        this.data = data;
     }
 
-    public void encode(PacketBuffer buf) {
+    public void encode(FriendlyByteBuf buf) {
         buf.writeFloat(this.data);
     }
 
     public void handle(Supplier<NetworkEvent.Context> context) {
         context.get().enqueueWork(() -> {
-            ClientPlayerEntity player = Minecraft.getInstance().player;
-            Objects.requireNonNull(player, "Client player cannot be null.").stepHeight = this.data - 0.4f;
+            var player = Minecraft.getInstance().player;
+            Objects.requireNonNull(player, "Client player cannot be null.").maxUpStep = this.data - 0.4f;
         });
         context.get().setPacketHandled(true);
     }
