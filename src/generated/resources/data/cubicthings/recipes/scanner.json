@@ -1,22 +1,22 @@
 {
   "type": "minecraft:crafting_shaped",
+  "group": "tools",
   "pattern": [
-    "=&&",
-    " =*"
+    "IDD",
+    " IR"
   ],
   "key": {
-    "&": {
+    "D": {
       "tag": "forge:gems/diamond"
     },
-    "=": {
+    "I": {
       "tag": "forge:ingots/iron"
     },
-    "*": {
+    "R": {
       "tag": "forge:dusts/redstone"
     }
   },
   "result": {
-    "item": "cubicthings:scanner",
-    "count": 1
+    "item": "cubicthings:scanner"
   }
 }
