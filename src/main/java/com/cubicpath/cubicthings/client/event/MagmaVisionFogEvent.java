@@ -27,8 +27,8 @@ public final class MagmaVisionFogEvent {
     public static void magmaVisionFogDensityEvent(final EntityViewRenderEvent.FogDensity event){
         final var player = (LocalPlayer)event.getInfo().getEntity();
         final var fluidState = event.getInfo().getBlockAtCamera().getFluidState();
-        CubicThings.LOGGER.info("Before | Is event cancelled:" + event.isCanceled());
-        CubicThings.LOGGER.info("Before | Fog Density:" + event.getDensity());
+        //CubicThings.LOGGER.info("Before | Is event cancelled:" + event.isCanceled());
+        //CubicThings.LOGGER.info("Before | Fog Density:" + event.getDensity());
 
         if (fluidState.is(FluidTags.LAVA)){
             float density = player.hasEffect(MobEffects.BLINDNESS) ? event.getDensity() * 5.0F : event.getDensity();
@@ -36,8 +36,8 @@ public final class MagmaVisionFogEvent {
             if (enchLvl >= 1){
                 event.setCanceled(true); // Level effects are: 0.66x density (I), 0.33x density (II), 0.18x density (III)
                 event.setDensity(density / ((enchLvl * ((float)enchLvl / 2)) + 1));
-                CubicThings.LOGGER.info("After | Is event cancelled:" + event.isCanceled());
-                CubicThings.LOGGER.info("After | Fog Density:" + event.getDensity());
+                //CubicThings.LOGGER.info("After | Is event cancelled:" + event.isCanceled());
+                //CubicThings.LOGGER.info("After | Fog Density:" + event.getDensity());
             }
         }
     }

@@ -70,7 +70,6 @@ public final class MultimineBreakEvent {
                 switch (blockFace.getAxis()) {
                     default -> throw new IllegalArgumentException("Unknown Axis.");
                     case X -> {
-                        CubicThings.LOGGER.info(blockFace.getAxis());
                         // Vertical & Inward Block Slice (X Axis Faces(East & West))
                         for (int y = -enchantLvl; y <= enchantLvl; y++) {
                             for (int z = -enchantLvl; z <= enchantLvl; z++) {
@@ -83,7 +82,6 @@ public final class MultimineBreakEvent {
                         }
                     }
                     case Y -> {
-                        CubicThings.LOGGER.info(blockFace.getAxis());
                         // Horizontal & Inward Block Slice (Y Axis Faces(Up & Down))
                         for (int x = -enchantLvl; x <= enchantLvl; x++) {
                             for (int z = -enchantLvl; z <= enchantLvl; z++) {
@@ -96,7 +94,6 @@ public final class MultimineBreakEvent {
                         }
                     }
                     case Z -> {
-                        CubicThings.LOGGER.info(blockFace.getAxis());
                         // Horizontal & Vertical Block Slice (Z Axis Faces(North & South))
                         for (int x = -enchantLvl; x <= enchantLvl; x++) {
                             for (int y = -enchantLvl; y <= enchantLvl; y++) {

@@ -4,7 +4,6 @@
 
 package com.cubicpath.util;
 
-import com.cubicpath.cubicthings.CubicThings;
 import net.minecraft.network.chat.*;
 
 /**

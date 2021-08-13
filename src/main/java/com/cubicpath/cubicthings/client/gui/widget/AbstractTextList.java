@@ -6,7 +6,6 @@ package com.cubicpath.cubicthings.client.gui.widget;
 
 import com.cubicpath.cubicthings.client.gui.screen.ITextListHolder;
 
-import com.cubicpath.util.ComponentUtils;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
@@ -20,7 +19,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 public abstract class AbstractTextList<E extends AbstractTextList.AbstractTextEntry<E>> extends AbstractSelectionList<E>{
-    protected int i;
     protected final int left, listWidth, borderPaddingX, borderPaddingY, textColor;
     protected final Consumer<AbstractTextEntry<E>> onEntryClicked;
     protected Font font;
@@ -30,7 +28,6 @@ public abstract class AbstractTextList<E extends AbstractTextList.AbstractTextEn
         super.setRenderBackground(renderDirtBackground);
         super.setRenderTopAndBottom(renderDarkOutline);
         super.setLeftPos(x); // Fixes bug where text is rendered on the far left of the screen
-        this.i = 0;
         this.left = x;
         this.listWidth = listWidth;
         this.borderPaddingX = borderPaddingX;
