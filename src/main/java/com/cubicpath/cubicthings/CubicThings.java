@@ -4,7 +4,6 @@
 
 package com.cubicpath.cubicthings;
 
-import com.cubicpath.cubicthings.client.gui.screen.ConfigScreen;
 import com.cubicpath.cubicthings.core.config.BaseConfig;
 import com.cubicpath.cubicthings.core.config.Configs;
 import com.cubicpath.cubicthings.core.init.*;
@@ -16,7 +15,6 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.*;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fmlclient.ConfigGuiHandler.ConfigGuiFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -59,7 +57,6 @@ public final class CubicThings {
         NetworkInit.registerPackets(); LOGGER.info("Network logic Registered");
 
         modLoadingContext.registerConfig(ModConfig.Type.COMMON, CONFIG.getSpec(), MODID + "-common.toml");
-        modLoadingContext.getActiveContainer().registerExtensionPoint(ConfigGuiFactory.class , () -> new ConfigGuiFactory((minecraft, screen) -> new ConfigScreen(screen, MODNAME + " v" + MODVER, CONFIG))); // Still registers extension point despite error
     }
 
     // FML Setup Events
