@@ -54,7 +54,7 @@ class LootTables extends LootTableProvider {
         });
     }
 
-
+    @SuppressWarnings("deprecation")
     protected static <T> T applyExplosionCondition(Block block, ConditionUserBuilder<T> p_124136_) {
         return (T) (!(block.getExplosionResistance() < 0) ? p_124136_.when(ExplosionCondition.survivesExplosion()) : p_124136_.unwrap());
     }

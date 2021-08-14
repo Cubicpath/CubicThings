@@ -29,7 +29,7 @@ public final class CubicThings {
     public static final String MODID = "cubicthings";
 
     public static final String MODNAME = "Cubic Things";
-    public static final String MODVER = "0.3.0-indev";
+    public static final String MODVER = "0.3.0";
 
     public static final Logger LOGGER = LogManager.getLogger();
 

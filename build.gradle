@@ -12,7 +12,7 @@ apply plugin: 'net.minecraftforge.gradle'
 
 group = 'com.cubicpath.cubicthings'
 archivesBaseName = 'cubicthings'
-version = "${minecraft_version}-0.3.0-indev" as Object
+version = "${minecraft_version}-0.3.0" as Object
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(16) // Java 16.
 
