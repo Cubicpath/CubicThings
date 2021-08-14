@@ -141,13 +141,11 @@ public abstract class AbstractTextList<E extends AbstractTextList.AbstractTextEn
         }
 
         @Override
-        //@SuppressWarnings("deprecation")
+        @SuppressWarnings("deprecation")
         public void render(PoseStack matrixStack, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean isMouseOver, float partialTicks) {
             Font font = this.parentScreen.getFontRenderer();
-            font.draw(matrixStack, this.displayText, left + this.xPadding , top + this.yPadding, this.color);
-            //font.width(this.displayText) > this.list.getRowWidth() ? ComponentUtils.subComponent(this.displayText, 0, this.list.getRowWidth() : this.displayText)
+            font.draw(matrixStack, font.width(this.displayText) > this.list.getRowWidth() ? font.split(this.displayText, this.list.getRowWidth()).get(0) : this.displayText.getVisualOrderText(), left + this.xPadding , top + this.yPadding, this.color);
 
-            //CubicThings.LOGGER.info(super.isMouseOver(mouseX, mouseY));
             if (super.isMouseOver(mouseX, mouseY)) {
                 fill(matrixStack, left, left + width, top, top + height, 0xFFFFFF);
             }

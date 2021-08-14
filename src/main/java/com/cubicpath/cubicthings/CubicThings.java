@@ -4,7 +4,6 @@
 
 package com.cubicpath.cubicthings;
 
-import com.cubicpath.cubicthings.core.config.BaseConfig;
 import com.cubicpath.cubicthings.core.config.Configs;
 import com.cubicpath.cubicthings.core.init.*;
 
@@ -33,7 +32,6 @@ public final class CubicThings {
     public static final String MODVER = "0.3.0-indev";
 
     public static final Logger LOGGER = LogManager.getLogger();
-    public static final BaseConfig CONFIG = Configs.CUBICTHINGS_COMMON;
 
     public CubicThings() {
         final ModLoadingContext modLoadingContext = ModLoadingContext.get();
@@ -56,7 +54,8 @@ public final class CubicThings {
         CommandInit.registerCommands(); LOGGER.info("Commands Registered");
         NetworkInit.registerPackets(); LOGGER.info("Network logic Registered");
 
-        modLoadingContext.registerConfig(ModConfig.Type.COMMON, CONFIG.getSpec(), MODID + "-common.toml");
+        modLoadingContext.registerConfig(ModConfig.Type.CLIENT, Configs.CUBICTHINGS_CLIENT.getSpec(), MODID + "-client.toml");
+        modLoadingContext.registerConfig(ModConfig.Type.COMMON, Configs.CUBICTHINGS_COMMON.getSpec(), MODID + "-common.toml");
     }
 
     // FML Setup Events

@@ -32,7 +32,7 @@ public class ConfigListWidget extends AbstractTextList<ConfigListWidget.ConfigEn
 
         public ConfigEntry(Consumer<AbstractTextEntry<ConfigEntry>> onClicked, Component displayText, @Nullable String path, ConfigScreen parent, int xPadding, int yPadding, int color) {
             super(onClicked, displayText, parent, xPadding, yPadding, color);
-            this.configValue = parent.getConfig().getConfigValue(path);
+            this.configValue = parent.getCurrent().getConfigValue(path);
         }
 
         @Override

@@ -25,15 +25,15 @@ import java.util.function.Supplier;
  * @see AbstractConfig
  */
 public class BaseConfig {
-    public final String modid;
+    public final String name;
     protected ForgeConfigSpec spec;
     private final HashMap<String, String> comments = new HashMap<>();
     private final HashMap<String, ForgeConfigSpec.ConfigValue<?>> values = new HashMap<>();
     private final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
     private final ArrayList<String> builderPath = new ArrayList<>();
 
-    public BaseConfig(String modid) {
-        this.modid = modid;
+    public BaseConfig(String configName) {
+        this.name = configName;
     }
 
     public static boolean isValueSpecInMapPath(Map<String, Object> valueMap, String[] path, final int depth) {
@@ -84,6 +84,15 @@ public class BaseConfig {
         return (T) values.get(path).get();
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> void setValue(String path, T value) {
+        var configValue = getConfigValue(path);
+        if (configValue == null || getValue(path, value.getClass()) == null)
+            return;
+        ((ForgeConfigSpec.ConfigValue<T>) configValue).set(value);
+        configValue.save();
+    }
+
     public <T> void buildValue(String valueName, T defaultValue, @Nullable String comment, Class<T> clazz) {
         var pathString = StringUtils.join(builderPath, ".") + (builderPath.isEmpty() ? "" : ".") + valueName;
         List<String> path = Lists.newArrayList(valueName);
@@ -93,7 +102,7 @@ public class BaseConfig {
             comments.put(pathString, comment);
             builder.comment(comment);
         }
-        values.put(pathString, builder.translation("modConfig." + modid + "." + pathString).define(path, defaultSupplier, validator, clazz));
+        values.put(pathString, builder.translation("modConfig." + name + "." + pathString).define(path, defaultSupplier, validator, clazz));
     }
 
     public <T> void buildListValue(String valueName, List<? extends T> defaultValue, @Nullable String comment, Predicate<Object> elementValidator) {
@@ -104,7 +113,7 @@ public class BaseConfig {
             comments.put(pathString, comment);
             builder.comment(comment);
         }
-        values.put(pathString, builder.translation("modConfig." + modid + "." + pathString).defineList(path, defaultSupplier, elementValidator));
+        values.put(pathString, builder.translation("modConfig." + name + "." + pathString).defineList(path, defaultSupplier, elementValidator));
     }
 
     public void push(String name, @Nullable String comment) {
