@@ -71,9 +71,9 @@ public class BaseConfig {
     @Nullable
     @SuppressWarnings("unchecked")
     public <T> T getDefault(String path, Class<T> clazz) {
-        if (!(spec.get(path) instanceof ForgeConfigSpec.ValueSpec valueSpec))
+        if (!(spec.get(path) instanceof ForgeConfigSpec.ValueSpec))
             return null;
-        return (T) valueSpec.getDefault();
+        return (T) ((ForgeConfigSpec.ValueSpec)spec.get(path)).getDefault();
     }
 
     @Nullable
@@ -86,7 +86,7 @@ public class BaseConfig {
 
     @SuppressWarnings("unchecked")
     public <T> void setValue(String path, T value) {
-        var configValue = getConfigValue(path);
+        ForgeConfigSpec.ConfigValue<?> configValue = getConfigValue(path);
         if (configValue == null || getValue(path, value.getClass()) == null)
             return;
         ((ForgeConfigSpec.ConfigValue<T>) configValue).set(value);
@@ -94,7 +94,7 @@ public class BaseConfig {
     }
 
     public <T> void buildValue(String valueName, T defaultValue, @Nullable String comment, Class<T> clazz) {
-        var pathString = StringUtils.join(builderPath, ".") + (builderPath.isEmpty() ? "" : ".") + valueName;
+        String pathString = StringUtils.join(builderPath, ".") + (builderPath.isEmpty() ? "" : ".") + valueName;
         List<String> path = Lists.newArrayList(valueName);
         Supplier<T> defaultSupplier = () -> defaultValue;
         Predicate<Object> validator = (o) -> o != null && clazz.isAssignableFrom(o.getClass());
@@ -106,7 +106,7 @@ public class BaseConfig {
     }
 
     public <T> void buildListValue(String valueName, List<? extends T> defaultValue, @Nullable String comment, Predicate<Object> elementValidator) {
-        var pathString = StringUtils.join(builderPath, ".") + (builderPath.isEmpty() ? "" : ".") + valueName;
+        String pathString = StringUtils.join(builderPath, ".") + (builderPath.isEmpty() ? "" : ".") + valueName;
         List<String> path = Lists.newArrayList(valueName);
         Supplier<List<? extends T>> defaultSupplier = () -> defaultValue;
         if (comment != null) {
@@ -117,7 +117,7 @@ public class BaseConfig {
     }
 
     public void push(String name, @Nullable String comment) {
-        var pathString = StringUtils.join(builderPath, ".") + (builderPath.isEmpty() ? "" : ".") + name;
+        String pathString = StringUtils.join(builderPath, ".") + (builderPath.isEmpty() ? "" : ".") + name;
         if (comment != null) {
             comments.put(pathString, comment);
             builder.comment(comment);

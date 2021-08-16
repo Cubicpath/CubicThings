@@ -6,10 +6,10 @@ package com.cubicpath.cubicthings.common.network;
 
 import com.cubicpath.cubicthings.common.item.ScannerItem;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fmllegacy.network.NetworkEvent;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -18,7 +18,7 @@ public class CScannerModePacket extends ModPacket {
     private final ScannerItem.ScannerMode scannerMode;
     private final int slotIndex;
 
-    public CScannerModePacket(FriendlyByteBuf buf) {
+    public CScannerModePacket(PacketBuffer buf) {
         super(buf);
         this.scannerMode = buf.readEnum(ScannerItem.ScannerMode.class);
         this.slotIndex = buf.readInt();
@@ -30,15 +30,15 @@ public class CScannerModePacket extends ModPacket {
         this.slotIndex = slotIndex;
     }
 
-    public void encode(FriendlyByteBuf buf) {
+    public void encode(PacketBuffer buf) {
         buf.writeEnum(this.scannerMode);
         buf.writeInt(this.slotIndex);
     }
 
     public void handle(Supplier<NetworkEvent.Context> context) {
         context.get().enqueueWork(() -> {
-            ServerPlayer player = context.get().getSender();
-            ItemStack stack = Objects.requireNonNull(player, "Sender cannot be null.").getInventory().getItem(this.slotIndex);
+            ServerPlayerEntity player = context.get().getSender();
+            ItemStack stack = Objects.requireNonNull(player, "Sender cannot be null.").inventory.getItem(this.slotIndex);
             if (stack.getItem() instanceof ScannerItem){
                 ScannerItem.setScannerMode(stack, this.scannerMode);
             }

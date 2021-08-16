@@ -7,6 +7,7 @@ package com.cubicpath.cubicthings.core.event;
 import com.cubicpath.cubicthings.CubicThings;
 import com.cubicpath.cubicthings.common.item.IDefaultNBTHolder;
 
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -19,10 +20,10 @@ public final class ItemNBTCraftEvent {
 
     @SubscribeEvent
     public static void itemNBTCraftEvent(final PlayerEvent.ItemCraftedEvent event) {
-        final var stack = event.getCrafting();
+        final ItemStack stack = event.getCrafting();
 
-        if (stack.getItem() instanceof IDefaultNBTHolder item) {
-            item.setupNBT(stack);
+        if (stack.getItem() instanceof IDefaultNBTHolder) {
+            ((IDefaultNBTHolder)stack.getItem()).setupNBT(stack);
         }
     }
 }

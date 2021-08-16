@@ -8,6 +8,7 @@
 [Comment]: # (Description)
 Random assortment of useful things.  
 ### Features
+
 -----------------------------------
   - Custom Commands
     - Burn Command
@@ -24,7 +25,7 @@ Random assortment of useful things.
     - Mutimine 
   - Custom Items
     - Scanner
-      - Item that can scan for entities or blocks in close proximity to the player
+      - Item that can scan for entities or blocks in proximity to the player
   - Custom Screens
     - Config Screen
       - Allows for easy viewing and changing of config file values

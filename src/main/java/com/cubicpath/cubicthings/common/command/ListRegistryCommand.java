@@ -12,11 +12,11 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.*;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.Commands;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.text.*;
+import net.minecraft.util.RegistryKey;
 import net.minecraftforge.registries.*;
 
 import javax.annotation.Nullable;
@@ -26,12 +26,12 @@ import java.util.Map;
 import java.util.Objects;
 
 public final class ListRegistryCommand {
-    private static final Dynamic2CommandExceptionType EMPTY_RESULTS_EXCEPTION = new Dynamic2CommandExceptionType((searchedRegistry, filterPhrase) -> new TranslatableComponent("commands.listRegistry.failure.emptyResults", searchedRegistry, filterPhrase));
-    private static final DynamicCommandExceptionType NO_REGISTRY_EXCEPTION = new DynamicCommandExceptionType((searchedRegistry) -> new TranslatableComponent("commands.listRegistry.failure.noSuchRegistry", searchedRegistry));
+    private static final Dynamic2CommandExceptionType EMPTY_RESULTS_EXCEPTION = new Dynamic2CommandExceptionType((searchedRegistry, filterPhrase) -> new TranslationTextComponent("commands.listRegistry.failure.emptyResults", searchedRegistry, filterPhrase));
+    private static final DynamicCommandExceptionType NO_REGISTRY_EXCEPTION = new DynamicCommandExceptionType((searchedRegistry) -> new TranslationTextComponent("commands.listRegistry.failure.noSuchRegistry", searchedRegistry));
     private static final HashMap<String, IForgeRegistry<?>> REGISTRY_MAP = new HashMap<>();
     public static final String COMMAND_NAME = "listregistry";
 
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher){
+    public static void register(CommandDispatcher<CommandSource> dispatcher){
         // Adds all registries in Forge using reflection during registration. Should NEVER fail.
         try { for (Field field : ForgeRegistries.class.getFields()){ REGISTRY_MAP.put(field.getName().toLowerCase(), (IForgeRegistry<?>) field.get(null)); }
         } catch (IllegalAccessException ignored){}
@@ -45,11 +45,11 @@ public final class ListRegistryCommand {
         })))));
     }
 
-    private static int listRegistry(CommandContext<CommandSourceStack> contextIn, @Nullable String registryIn, @Nullable String filterIn) throws CommandSyntaxException {
-        MutableComponent message = TextComponent.EMPTY.plainCopy();
+    private static int listRegistry(CommandContext<CommandSource> contextIn, @Nullable String registryIn, @Nullable String filterIn) throws CommandSyntaxException {
+        IFormattableTextComponent message = StringTextComponent.EMPTY.plainCopy();
         if (registryIn == null){
             // Return message containing all forge registries if registry is not specified.
-            MutableComponent registriesComponent = TextComponent.EMPTY.plainCopy();
+            IFormattableTextComponent registriesComponent = StringTextComponent.EMPTY.plainCopy();
             REGISTRY_MAP.keySet().forEach((key) -> registriesComponent.append(key).append(ComponentUtils.stringToText(" | ", 0x55FF55)));
             message.append(ComponentUtils.stringToText("---------------------------------------\n", 0xAA0000));
             message.append(ComponentUtils.stringToText("List of Registries:\n ", 0xAA0000));
@@ -61,9 +61,9 @@ public final class ListRegistryCommand {
                 String registryName = (String) o;
                 if (registryIn.equalsIgnoreCase(registryName)){
                     IForgeRegistry<?> forgeRegistry = REGISTRY_MAP.get(registryName);
-                    MutableComponent entriesComponent = TextComponent.EMPTY.plainCopy();
+                    IFormattableTextComponent entriesComponent = StringTextComponent.EMPTY.plainCopy();
 
-                    for (Map.Entry<? extends ResourceKey<?>, ? extends IForgeRegistryEntry<?>> registryEntry : forgeRegistry.getEntries()) {
+                    for (Map.Entry<? extends RegistryKey<?>, ? extends IForgeRegistryEntry<?>> registryEntry : forgeRegistry.getEntries()) {
                         String value = Objects.requireNonNull(registryEntry.getValue().getRegistryName(), "Registry Entry doesn't have a Registry Name").toString();
                         if (value.startsWith("minecraft:")) value = value.replaceFirst("minecraft:", "");
                         if (filterIn != null) value = value.contains(filterIn) ? value : "";
@@ -87,7 +87,7 @@ public final class ListRegistryCommand {
         }
 
         // Send feedback to player
-        contextIn.getSource().getPlayerOrException().sendMessage(message, Player.createPlayerUUID(contextIn.getSource().getPlayerOrException().getGameProfile()));
+        contextIn.getSource().getPlayerOrException().sendMessage(message, PlayerEntity.createPlayerUUID(contextIn.getSource().getPlayerOrException().getGameProfile()));
         return 1;
     }
 

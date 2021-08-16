@@ -5,8 +5,9 @@
 package com.cubicpath.cubicthings.common.network;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.fmllegacy.network.NetworkEvent;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -14,7 +15,7 @@ import java.util.function.Supplier;
 public class SStepHeightSyncPacket extends ModPacket {
     private final float data;
 
-    public SStepHeightSyncPacket(FriendlyByteBuf buf) {
+    public SStepHeightSyncPacket(PacketBuffer buf) {
         super(buf);
         this.data = buf.readFloat();
     }
@@ -23,13 +24,13 @@ public class SStepHeightSyncPacket extends ModPacket {
         this.data = data;
     }
 
-    public void encode(FriendlyByteBuf buf) {
+    public void encode(PacketBuffer buf) {
         buf.writeFloat(this.data);
     }
 
     public void handle(Supplier<NetworkEvent.Context> context) {
         context.get().enqueueWork(() -> {
-            var player = Minecraft.getInstance().player;
+            PlayerEntity player = Minecraft.getInstance().player;
             Objects.requireNonNull(player, "Client player cannot be null.").maxUpStep = this.data - 0.4f;
         });
         context.get().setPacketHandled(true);

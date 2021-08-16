@@ -8,7 +8,7 @@ import net.minecraft.data.DataGenerator;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
+import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public final class DataGenerators {
@@ -22,17 +22,17 @@ public final class DataGenerators {
         ExistingFileHelper fileHelper = event.getExistingFileHelper();
 
         if (event.includeClient()){
-            var itemModels      =       new ItemModels(generator, fileHelper);
-            var blockStates     =       new BlockStates(generator, fileHelper);
+            ItemModels itemModels       =       new ItemModels(generator, fileHelper);
+            BlockStates blockStates     =       new BlockStates(generator, fileHelper);
             generator.addProvider(itemModels);
             generator.addProvider(blockStates);
         }
 
         if (event.includeServer()){
-            var blockTags       =       new BlockTags(generator, fileHelper);
-            var itemTags        =       new ItemTags(generator, blockTags, fileHelper);
-            var lootTables      =       new LootTables(generator);
-            var recipes         =       new Recipes(generator);
+            BlockTags blockTags         =       new BlockTags(generator, fileHelper);
+            ItemTags itemTags           =       new ItemTags(generator, blockTags, fileHelper);
+            LootTables lootTables       =       new LootTables(generator);
+            Recipes recipes             =       new Recipes(generator);
             generator.addProvider(blockTags);
             generator.addProvider(itemTags);
             generator.addProvider(lootTables);

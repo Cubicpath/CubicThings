@@ -9,29 +9,29 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.arguments.item.ItemArgument;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.command.Commands;
+import net.minecraft.command.arguments.EntityArgument;
+import net.minecraft.command.arguments.ItemArgument;
+import net.minecraft.command.CommandSource;
+import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.util.SoundEvents;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.entity.Entity;
+import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Objects;
 
 public final class HatCommand {
-    private static final SimpleCommandExceptionType PERMISSION_EXCEPTION = new SimpleCommandExceptionType(new TranslatableComponent("commands.hat.failure.permission"));
+    private static final SimpleCommandExceptionType PERMISSION_EXCEPTION = new SimpleCommandExceptionType(new TranslationTextComponent("commands.hat.failure.permission"));
     public static final String COMMAND_NAME = "hat";
 
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher){
+    public static void register(CommandDispatcher<CommandSource> dispatcher){
         dispatcher.register(Commands.literal(COMMAND_NAME).executes((context) -> {
             // Gives you a hat from your mainhand
             return placeHat(context, ImmutableList.of(context.getSource().getPlayerOrException()), null);
@@ -44,27 +44,27 @@ public final class HatCommand {
         })))));
     }
 
-    private static int placeHat(CommandContext<CommandSourceStack> context, Collection<? extends Entity> targets, @Nullable ItemStack stack) throws CommandSyntaxException {
+    private static int placeHat(CommandContext<CommandSource> context, Collection<? extends Entity> targets, @Nullable ItemStack stack) throws CommandSyntaxException {
         int i = 0;
         if (stack == null) stack = context.getSource().getPlayerOrException().getMainHandItem();
         for (Entity entity: targets){
             if (!entity.is(Objects.requireNonNull(context.getSource().getEntity()))) throw PERMISSION_EXCEPTION.create();
             if (entity instanceof LivingEntity && !stack.isEmpty()){
-                if (!((LivingEntity) entity).getItemBySlot(EquipmentSlot.HEAD).isEmpty()){
-                    entity.level.addFreshEntity(new ItemEntity(entity.level, entity.getX(), entity.getEyeY(), entity.getZ(), ((LivingEntity) entity).getItemBySlot(EquipmentSlot.HEAD)));
-                    entity.level.playSound(entity instanceof Player ? (Player)entity : null, entity.getOnPos(), SoundEvents.ITEM_PICKUP, SoundSource.NEUTRAL, 1.0F, (entity.level.random.nextFloat() - entity.level.random.nextFloat()) * 0.4F + 1.0F);
+                if (!((LivingEntity) entity).getItemBySlot(EquipmentSlotType.HEAD).isEmpty()){
+                    entity.level.addFreshEntity(new ItemEntity(entity.level, entity.getX(), entity.getEyeY(), entity.getZ(), ((LivingEntity) entity).getItemBySlot(EquipmentSlotType.HEAD)));
+                    entity.level.playSound(entity instanceof PlayerEntity? (PlayerEntity) entity : null, entity.blockPosition(), SoundEvents.ITEM_PICKUP, SoundCategory.NEUTRAL, 1.0F, (entity.level.random.nextFloat() - entity.level.random.nextFloat()) * 0.4F + 1.0F);
                 }
-                entity.setItemSlot(EquipmentSlot.HEAD, stack);
-                if (!context.getSource().hasPermission(2)) entity.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+                entity.setItemSlot(EquipmentSlotType.HEAD, stack);
+                if (!context.getSource().hasPermission(2)) entity.setItemSlot(EquipmentSlotType.MAINHAND, ItemStack.EMPTY);
                 i++;
             }
         }
 
         // Send feedback to player
         if (i == 1) {
-            context.getSource().sendSuccess(new TranslatableComponent("commands.hat.success.single", stack.getDisplayName(), targets.iterator().next().getDisplayName()), true);
+            context.getSource().sendSuccess(new TranslationTextComponent("commands.hat.success.single", stack.getDisplayName(), targets.iterator().next().getDisplayName()), true);
         } else {
-            context.getSource().sendSuccess(new TranslatableComponent("commands.hat.success.multiple", stack.getDisplayName(), i), true);
+            context.getSource().sendSuccess(new TranslationTextComponent("commands.hat.success.multiple", stack.getDisplayName(), i), true);
         }
 
         return i;

@@ -8,12 +8,12 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.command.Commands;
+import net.minecraft.command.arguments.EntityArgument;
+import net.minecraft.command.CommandSource;
+import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -21,7 +21,7 @@ import java.util.Collection;
 public final class HealCommand {
     public static final String COMMAND_NAME = "heal";
 
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher){
+    public static void register(CommandDispatcher<CommandSource> dispatcher){
         dispatcher.register(Commands.literal(COMMAND_NAME).requires((context) -> {
             return context.hasPermission(2);
         }).executes((context) -> {
@@ -36,7 +36,7 @@ public final class HealCommand {
         })))));
     }
 
-    private static int heal(CommandContext<CommandSourceStack> context, Collection<? extends Entity> targets, @Nullable Float amount){
+    private static int heal(CommandContext<CommandSource> context, Collection<? extends Entity> targets, @Nullable Float amount){
         for (Entity entity: targets){
             LivingEntity livingEntity = entity instanceof LivingEntity ? ((LivingEntity)entity) : null;
             if (livingEntity != null) {
@@ -47,9 +47,9 @@ public final class HealCommand {
 
         // Send feedback to player
         if (targets.size() == 1) {
-            context.getSource().sendSuccess(new TranslatableComponent("commands.heal.success.single", targets.iterator().next().getDisplayName(), amount), true);
+            context.getSource().sendSuccess(new TranslationTextComponent("commands.heal.success.single", targets.iterator().next().getDisplayName(), amount), true);
         } else {
-            context.getSource().sendSuccess(new TranslatableComponent("commands.heal.success.multiple", targets.size(), amount), true);
+            context.getSource().sendSuccess(new TranslationTextComponent("commands.heal.success.multiple", targets.size(), amount), true);
         }
 
         return targets.size();

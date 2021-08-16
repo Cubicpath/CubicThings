@@ -4,16 +4,16 @@
 
 package com.cubicpath.util;
 
-import net.minecraft.core.Direction;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.fluid.FluidState;
+import net.minecraft.util.Direction;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.EntityRayTraceResult;
+import net.minecraft.util.math.RayTraceContext;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.IWorld;
 import net.minecraftforge.common.ForgeMod;
 
 import java.util.Objects;
@@ -21,25 +21,22 @@ import java.util.Objects;
 /**
  * Provides easy-to-access methods for simple ray tracing.
  *
- * @see ClipContext
- * @see BlockHitResult
- * @see EntityHitResult
+ * @see RayTraceContext
+ * @see BlockRayTraceResult
+ * @see EntityRayTraceResult
  *
  * @since 1.0
  * @author Cubicpath
  */
-public final class RayTraceHelper {
-    private RayTraceHelper(){
-        throw new IllegalStateException();
-    }
+public class RayTraceHelper {
 
     public static class LookingAtContext {
         public final double xAngle;
         public final double yAngle;
         public final double zAngle;
-        public final Vec3 view;
-        public final Vec3 eyePosition;
-        public final Vec3 eyeLookingTo;
+        public final Vector3d view;
+        public final Vector3d eyePosition;
+        public final Vector3d eyeLookingTo;
 
         public LookingAtContext(Entity entityIn, double maxDistance) {
             this.view = entityIn.getViewVector(1.0F);
@@ -47,7 +44,7 @@ public final class RayTraceHelper {
             this.yAngle = view.y;
             this.zAngle = view.z;
             this.eyePosition = entityIn.getEyePosition(1.0F);
-            this.eyeLookingTo = eyePosition.add(view.x * maxDistance, view.y * maxDistance, view.z * maxDistance);
+            this.eyeLookingTo = eyePosition.add(xAngle * maxDistance, yAngle * maxDistance, zAngle * maxDistance);
         }
     }
 
@@ -58,40 +55,40 @@ public final class RayTraceHelper {
 
 
     /**
-     * Create a new {@link ClipContext} using an {@link Entity} and where that entity is looking.
+     * Create a new {@link RayTraceContext} using an {@link Entity} and where that entity is looking.
      * @param entityIn Entity that you want to create a new ray from.
-     * @param block What {@link ClipContext.Block} the ray should react to.
-     * @param fluid What {@link ClipContext.Fluid} the ray should react to.
-     * @param maxDistance Ma-distance for the ray to travel.
-     * @return {@link ClipContext} from entityIn's eye position.
+     * @param blockMode What {@link RayTraceContext.BlockMode} the ray should react to.
+     * @param fluidMode What {@link RayTraceContext.FluidMode} the ray should react to.
+     * @param maxDistance Max distance for the ray to travel.
+     * @return {@link RayTraceContext} from entityIn's eye position.
      */
-    public static ClipContext newEntityLookingAtContext(Entity entityIn, ClipContext.Block block, ClipContext.Fluid fluid, double maxDistance){
-        Vec3 endVec = new LookingAtContext(entityIn, maxDistance).eyeLookingTo;
-        return new ClipContext(entityIn.getEyePosition(1.0F), endVec, block, fluid, entityIn);
+    public static RayTraceContext newEntityLookingAtContext(Entity entityIn, RayTraceContext.BlockMode blockMode, RayTraceContext.FluidMode fluidMode, double maxDistance){
+        Vector3d endVec = new LookingAtContext(entityIn, maxDistance).eyeLookingTo;
+        return new RayTraceContext(entityIn.getEyePosition(1.0F), endVec, blockMode, fluidMode, entityIn);
     }
 
     /**
-     * Create a new {@link ClipContext} using an {@link Entity} and where that entity is looking.<br>
+     * Create a new {@link RayTraceContext} using an {@link Entity} and where that entity is looking.<br>
      * <br>
-     * block – {@link ClipContext.Block#OUTLINE}<br>
-     * fluid – {@link ClipContext.Fluid#NONE}<br>
+     * blockMode – {@link RayTraceContext.BlockMode#OUTLINE}<br>
+     * fluidMode – {@link RayTraceContext.FluidMode#NONE}<br>
      * maxDistance – 1024<br>
      * @param entityIn Entity that you want to create a new ray from.
-     * @return {@link ClipContext} from entityIn's eye position.
+     * @return {@link RayTraceContext} from entityIn's eye position.
      */
-    public static ClipContext newEntityLookingAtContext(Entity entityIn){
-        Vec3 endVec = new LookingAtContext(entityIn, 1024).eyeLookingTo;
-        return new ClipContext(entityIn.getEyePosition(1.0F), endVec, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, entityIn);
+    public static RayTraceContext newEntityLookingAtContext(Entity entityIn){
+        Vector3d endVec = new LookingAtContext(entityIn, 1024).eyeLookingTo;
+        return new RayTraceContext(entityIn.getEyePosition(1.0F), endVec, RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.NONE, entityIn);
     }
 
     /** Do a ray trace, ignore fluids and hit block outlines. **/
-    public static BlockHitResult doBlockRayTrace(Entity entityIn, double maxDistance) {
-        return entityIn.getCommandSenderWorld().clip(newEntityLookingAtContext(entityIn, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, maxDistance));
+    public static BlockRayTraceResult doBlockRayTrace(Entity entityIn, double maxDistance) {
+        return entityIn.level.clip(newEntityLookingAtContext(entityIn, RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.NONE, maxDistance));
     }
 
     /** Do a ray trace, hit fluids and visual outlines. **/
-    public static BlockHitResult doFluidRayTrace(Entity entityIn, double maxDistance) {
-        return entityIn.getCommandSenderWorld().clip(newEntityLookingAtContext(entityIn, ClipContext.Block.VISUAL, ClipContext.Fluid.ANY, maxDistance));
+    public static BlockRayTraceResult doFluidRayTrace(Entity entityIn, double maxDistance) {
+        return entityIn.getCommandSenderWorld().clip(newEntityLookingAtContext(entityIn, RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.ANY, maxDistance));
     }
 
     /** Get the block face a LivingEntity is looking at. **/
@@ -105,22 +102,22 @@ public final class RayTraceHelper {
     }
 
     /** Get the BlockState of the block a LivingEntity is looking at. **/
-    public static BlockState targetedBlockState(LivingEntity entityIn, BlockGetter blockGetter, boolean ignoreReachDistance){
-        return blockGetter.getBlockState(doBlockRayTrace(entityIn, ignoreReachDistance ? 1024 : getReachDistance(entityIn)).getBlockPos());
+    public static BlockState targetedBlockState(LivingEntity entityIn, IWorld iWorld, boolean ignoreReachDistance){
+        return iWorld.getBlockState(doBlockRayTrace(entityIn, ignoreReachDistance ? 1024 : getReachDistance(entityIn)).getBlockPos());
     }
 
     /** Get the BlockState of the block an Entity is looking at. **/
-    public static BlockState targetedBlockState(Entity entityIn, BlockGetter blockGetter){
-        return blockGetter.getBlockState(doBlockRayTrace(entityIn, 1024).getBlockPos());
+    public static BlockState targetedBlockState(Entity entityIn, IWorld iWorld){
+        return iWorld.getBlockState(doBlockRayTrace(entityIn, 1024).getBlockPos());
     }
 
     /** Get the FluidState of the block or fluid a LivingEntity is looking at. **/
-    public static FluidState targetedFluidState(LivingEntity entityIn, BlockGetter blockGetter, boolean ignoreReachDistance){
-        return blockGetter.getFluidState(doFluidRayTrace(entityIn, ignoreReachDistance ? 1024 : getReachDistance(entityIn)).getBlockPos());
+    public static FluidState targetedFluidState(LivingEntity entityIn, IWorld iWorld, boolean ignoreReachDistance){
+        return iWorld.getFluidState(doFluidRayTrace(entityIn, ignoreReachDistance ? 1024 : getReachDistance(entityIn)).getBlockPos());
     }
 
     /** Get the FluidState of the block or fluid an Entity is looking at. **/
-    public static FluidState targetedFluidState(Entity entityIn, BlockGetter blockGetter){
-        return blockGetter.getFluidState(doFluidRayTrace(entityIn, 1024).getBlockPos());
+    public static FluidState targetedFluidState(Entity entityIn, IWorld iWorld){
+        return iWorld.getFluidState(doFluidRayTrace(entityIn, 1024).getBlockPos());
     }
 }

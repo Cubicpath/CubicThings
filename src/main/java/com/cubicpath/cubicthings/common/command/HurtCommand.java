@@ -9,13 +9,13 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.command.arguments.EntityArgument;
+import net.minecraft.command.Commands;
+import net.minecraft.command.CommandSource;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.text.TranslationTextComponent;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -24,7 +24,7 @@ public final class HurtCommand {
     public static final String COMMAND_NAME = "hurt";
     public static final float DEFAULT_DAMAGE = 1.0F;
 
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher){
+    public static void register(CommandDispatcher<CommandSource> dispatcher){
         dispatcher.register(Commands.literal(COMMAND_NAME).requires((context) -> {
             return context.hasPermission(2);
         }).executes((context) -> {
@@ -39,7 +39,7 @@ public final class HurtCommand {
         })))));
     }
 
-    private static int hurt(CommandContext<CommandSourceStack> context, Collection<? extends Entity> targets, @Nullable Float amount) throws CommandSyntaxException {
+    private static int hurt(CommandContext<CommandSource> context, Collection<? extends Entity> targets, @Nullable Float amount) throws CommandSyntaxException {
         amount = amount != null ? amount : DEFAULT_DAMAGE; // Default amount
         for (Entity entity: targets){
             LivingEntity livingEntity = entity instanceof LivingEntity ? ((LivingEntity)entity) : null;
@@ -48,9 +48,9 @@ public final class HurtCommand {
 
         // Send feedback to player
         if (targets.size() == 1) {
-            context.getSource().sendSuccess(new TranslatableComponent("commands.hurt.success.single", targets.iterator().next().getDisplayName(), amount), true);
+            context.getSource().sendSuccess(new TranslationTextComponent("commands.hurt.success.single", targets.iterator().next().getDisplayName(), amount), true);
         } else {
-            context.getSource().sendSuccess(new TranslatableComponent("commands.hurt.success.multiple", targets.size(), amount), true);
+            context.getSource().sendSuccess(new TranslationTextComponent("commands.hurt.success.multiple", targets.size(), amount), true);
         }
 
         return targets.size();

@@ -8,18 +8,18 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.command.Commands;
+import net.minecraft.command.arguments.EntityArgument;
+import net.minecraft.command.CommandSource;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.Collection;
 
 public final class BurnCommand {
     public static final String COMMAND_NAME = "burn";
 
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher){
+    public static void register(CommandDispatcher<CommandSource> dispatcher){
         dispatcher.register(Commands.literal(COMMAND_NAME).requires((context) -> {
             return context.hasPermission(2);
         }).then(Commands.argument("targets", EntityArgument.entities()).executes(context -> {
@@ -34,7 +34,7 @@ public final class BurnCommand {
         }))))));
     }
 
-    private static int addFire(CommandContext<CommandSourceStack> context, Collection<? extends Entity> targets, int time, boolean preferTicks){
+    private static int addFire(CommandContext<CommandSource> context, Collection<? extends Entity> targets, int time, boolean preferTicks){
         for (Entity entity: targets){
             if (preferTicks) {
                 entity.setRemainingFireTicks(time);
@@ -46,9 +46,9 @@ public final class BurnCommand {
         // Send feedback to player
         String timeAmountFormat = (!preferTicks ? "second" : "tick") + (time != 1 ? "s" : "");
         if (targets.size() == 1) {
-            context.getSource().sendSuccess(new TranslatableComponent("commands.burn.success.single", targets.iterator().next().getDisplayName(), time, timeAmountFormat), true);
+            context.getSource().sendSuccess(new TranslationTextComponent("commands.burn.success.single", targets.iterator().next().getDisplayName(), time, timeAmountFormat), true);
         } else {
-            context.getSource().sendSuccess(new TranslatableComponent("commands.burn.success.multiple", targets.size(), time, timeAmountFormat), true);
+            context.getSource().sendSuccess(new TranslationTextComponent("commands.burn.success.multiple", targets.size(), time, timeAmountFormat), true);
         }
 
         return targets.size();

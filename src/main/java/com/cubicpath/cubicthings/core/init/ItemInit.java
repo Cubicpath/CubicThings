@@ -7,10 +7,10 @@ package com.cubicpath.cubicthings.core.init;
 import com.cubicpath.cubicthings.CubicThings;
 import com.cubicpath.cubicthings.common.item.*;
 
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Rarity;
-import net.minecraftforge.fmllegacy.RegistryObject;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.Rarity;
+import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -22,6 +22,6 @@ public final class ItemInit {
 
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS , CubicThings.MODID);
 
-    public static final RegistryObject<Item> SCANNER = ITEMS.register("scanner", () -> new ScannerItem(new Item.Properties().durability(5000).rarity(Rarity.UNCOMMON).tab(CreativeModeTab.TAB_TOOLS), 40, 3));
+    public static final RegistryObject<Item> SCANNER = ITEMS.register("scanner", () -> new ScannerItem(new Item.Properties().durability(5000).rarity(Rarity.UNCOMMON).tab(ItemGroup.TAB_TOOLS), 40, 3));
 
 }

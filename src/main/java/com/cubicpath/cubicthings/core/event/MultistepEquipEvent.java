@@ -10,9 +10,11 @@ import com.cubicpath.cubicthings.core.init.EnchantmentInit;
 import com.cubicpath.cubicthings.core.init.NetworkInit;
 import com.cubicpath.cubicthings.common.network.SStepHeightSyncPacket;
 
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraftforge.event.entity.living.LivingEquipmentChangeEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -32,14 +34,14 @@ public final class MultistepEquipEvent {
 
     @SubscribeEvent
     public static void multistepEquipEvent(final LivingEquipmentChangeEvent event){
-        final var eventEntity = event.getEntityLiving();
-        final var eventEntityPlayer = Objects.requireNonNull(eventEntity.getCommandSenderWorld().getServer(), "Entity's world's server cannot be null.").getPlayerList().getPlayer(eventEntity.getUUID());
-        final var oldEquip = event.getFrom();
-        final var newEquip = event.getTo();
-        final var oldStepHeight = eventEntity.maxUpStep;
+        final Entity eventEntity = event.getEntityLiving();
+        final ServerPlayerEntity eventEntityPlayer = Objects.requireNonNull(eventEntity.getCommandSenderWorld().getServer(), "Entity's world's server cannot be null.").getPlayerList().getPlayer(eventEntity.getUUID());
+        final ItemStack oldEquip = event.getFrom();
+        final ItemStack newEquip = event.getTo();
+        final float oldStepHeight = eventEntity.maxUpStep;
 
         // Don't run if equipped in hands
-        if (event.getSlot().getType() != EquipmentSlot.Type.HAND){
+        if (event.getSlot().getType() != EquipmentSlotType.Group.HAND){
 
             // Un-equip enchantment
             if (isValidItem(oldEquip)){

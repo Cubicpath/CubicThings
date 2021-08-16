@@ -7,9 +7,10 @@ package com.cubicpath.cubicthings.client.event;
 import com.cubicpath.cubicthings.CubicThings;
 import com.cubicpath.cubicthings.core.init.EnchantmentInit;
 
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.effect.MobEffects;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.fluid.FluidState;
+import net.minecraft.potion.Effects;
 import net.minecraft.tags.FluidTags;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
@@ -25,13 +26,13 @@ public final class MagmaVisionFogEvent {
     //FIXME: Density not changing
     @SubscribeEvent
     public static void magmaVisionFogDensityEvent(final EntityViewRenderEvent.FogDensity event){
-        final var player = (LocalPlayer)event.getInfo().getEntity();
-        final var fluidState = event.getInfo().getBlockAtCamera().getFluidState();
+        final ClientPlayerEntity player = (ClientPlayerEntity)event.getInfo().getEntity();
+        final FluidState fluidState = event.getInfo().getBlockAtCamera().getFluidState();
         //CubicThings.LOGGER.info("Before | Is event cancelled:" + event.isCanceled());
         //CubicThings.LOGGER.info("Before | Fog Density:" + event.getDensity());
 
         if (fluidState.is(FluidTags.LAVA)){
-            float density = player.hasEffect(MobEffects.BLINDNESS) ? event.getDensity() * 5.0F : event.getDensity();
+            float density = player.hasEffect(Effects.BLINDNESS) ? event.getDensity() * 5.0F : event.getDensity();
             int enchLvl = EnchantmentHelper.getEnchantmentLevel(EnchantmentInit.MAGMA_VISION.get(), player);
             if (enchLvl >= 1){
                 event.setCanceled(true); // Level effects are: 0.66x density (I), 0.33x density (II), 0.18x density (III)
@@ -44,13 +45,13 @@ public final class MagmaVisionFogEvent {
 
     @SubscribeEvent
     public static void magmaVisionFogColorEvent(final EntityViewRenderEvent.FogColors event) {
-        final var player = (LocalPlayer)event.getInfo().getEntity();
-        final var fluidState = event.getInfo().getBlockAtCamera().getFluidState();
+        final ClientPlayerEntity player = (ClientPlayerEntity)event.getInfo().getEntity();
+        final FluidState fluidState = event.getInfo().getBlockAtCamera().getFluidState();
 
         if (fluidState.is(FluidTags.LAVA)) {
             int enchLvl = EnchantmentHelper.getEnchantmentLevel(EnchantmentInit.MAGMA_VISION.get(), player);
             if (enchLvl >= 1){
-                if (player.hasEffect(MobEffects.BLINDNESS)){
+                if (player.hasEffect(Effects.BLINDNESS)){
                     event.setRed(0.3F);
                     event.setGreen(0F);
                     event.setBlue(0.05F);

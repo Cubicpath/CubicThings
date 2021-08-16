@@ -5,7 +5,7 @@
 /**
  * Custom widgets used for GUIs.
  *
- * @see net.minecraft.client.gui.components.AbstractWidget
+ * @see net.minecraft.client.gui.widget.Widget
  */
 @ParametersAreNonnullByDefault
 package com.cubicpath.cubicthings.client.gui.widget;

@@ -7,18 +7,14 @@ package com.cubicpath.cubicthings.datagen;
 import com.cubicpath.cubicthings.CubicThings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import net.minecraft.block.Block;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.DataProvider;
-import net.minecraft.data.HashCache;
-import net.minecraft.data.loot.LootTableProvider;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.storage.loot.LootPool;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.predicates.ConditionUserBuilder;
-import net.minecraft.world.level.storage.loot.predicates.ExplosionCondition;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.data.IDataProvider;
+import net.minecraft.data.DirectoryCache;
+import net.minecraft.data.LootTableProvider;
+import net.minecraft.loot.*;
+import net.minecraft.loot.conditions.SurvivesExplosion;
+import net.minecraft.util.ResourceLocation;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -35,19 +31,19 @@ class LootTables extends LootTableProvider {
     }
 
     @Override
-    public void run(HashCache cache) {
+    public void run(DirectoryCache cache) {
         Map<ResourceLocation, LootTable> tables = new HashMap<>();
 
         writeTables(cache, tables);
     }
 
     //https://github.com/McJty/YouTubeTutorial17/blob/b7b3cf09630f9143cd0475f96dd328176f2dacf1/src/main/java/com/mcjty/datagen/LootTables.java#L61
-    private void writeTables(HashCache cache, Map<ResourceLocation, LootTable> tables) {
+    private void writeTables(DirectoryCache cache, Map<ResourceLocation, LootTable> tables) {
         Path outputFolder = this.generator.getOutputFolder();
         tables.forEach((key, lootTable) -> {
             Path path = outputFolder.resolve("data/" + key.getNamespace() + "/loot_tables/" + key.getPath() + ".json");
             try {
-                DataProvider.save(GSON, cache, net.minecraft.world.level.storage.loot.LootTables.serialize(lootTable), path);
+                IDataProvider.save(GSON, cache, LootTableManager.serialize(lootTable), path);
             } catch (IOException e) {
                 CubicThings.LOGGER.error("Couldn't write loot table {}", path, e);
             }
@@ -55,8 +51,8 @@ class LootTables extends LootTableProvider {
     }
 
     @SuppressWarnings("deprecation")
-    protected static <T> T applyExplosionCondition(Block block, ConditionUserBuilder<T> p_124136_) {
-        return (T) (!(block.getExplosionResistance() < 0) ? p_124136_.when(ExplosionCondition.survivesExplosion()) : p_124136_.unwrap());
+    protected static <T> T applyExplosionCondition(Block block, ILootConditionConsumer<T> p_124136_) {
+        return !(block.getExplosionResistance() < 0) ? p_124136_.when(SurvivesExplosion.survivesExplosion()) : p_124136_.unwrap();
     }
 
     public LootTable.Builder dropSelf(Block block) {
@@ -64,7 +60,7 @@ class LootTables extends LootTableProvider {
     }
 
     public LootTable.Builder dropSelf(Block block, boolean explosionResistant) {
-        return LootTable.lootTable().withPool(explosionResistant ? LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(block)) : applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))).add(LootItem.lootTableItem(block)));
+        return LootTable.lootTable().withPool(explosionResistant ? LootPool.lootPool().setRolls(ConstantRange.exactly(1)).add(ItemLootEntry.lootTableItem(block)) : applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantRange.exactly(1))).add(ItemLootEntry.lootTableItem(block)));
     }
 
     @Override

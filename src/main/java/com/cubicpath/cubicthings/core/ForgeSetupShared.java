@@ -8,7 +8,7 @@ import com.cubicpath.cubicthings.CubicThings;
 import com.cubicpath.cubicthings.core.init.CommandInit;
 
 import com.mojang.brigadier.CommandDispatcher;
-import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.command.CommandSource;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -20,7 +20,7 @@ public final class ForgeSetupShared {
 
     @SubscribeEvent
     public static void onRegisterCommands(final RegisterCommandsEvent event){
-        for (Consumer<CommandDispatcher<CommandSourceStack>> register: CommandInit.COMMAND_ENTRIES) register.accept(event.getDispatcher());
+        for (Consumer<CommandDispatcher<CommandSource>> register: CommandInit.COMMAND_ENTRIES) register.accept(event.getDispatcher());
     }
 
 }

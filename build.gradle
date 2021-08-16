@@ -14,7 +14,7 @@ group = 'com.cubicpath.cubicthings'
 archivesBaseName = 'cubicthings'
 version = "${minecraft_version}-0.3.0" as Object
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(16) // Java 16.
+java.toolchain.languageVersion = JavaLanguageVersion.of(8) // Java 8.
 
 minecraft {
     mappings channel: 'official', version: "${minecraft_version}"

@@ -4,14 +4,14 @@
 
 package com.cubicpath.cubicthings.common.enchantment;
 
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentCategory;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentType;
+import net.minecraft.inventory.EquipmentSlotType;
 
 public class MultimineEnchantment extends Enchantment {
 
-    public MultimineEnchantment(Rarity rarityIn, EquipmentSlot[] slots) {
-        super(rarityIn, EnchantmentCategory.DIGGER, slots);
+    public MultimineEnchantment(Rarity rarityIn, EquipmentSlotType[] slots) {
+        super(rarityIn, EnchantmentType.DIGGER, slots);
     }
 
     @Override

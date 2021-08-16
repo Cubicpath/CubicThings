@@ -4,15 +4,15 @@
 
 package com.cubicpath.cubicthings.client.gui.screen;
 
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.AbstractSelectionList;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.widget.list.AbstractList;
+import net.minecraft.util.text.ITextComponent;
 
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 public interface ITextListHolder {
-    Font getFontRenderer();
+    FontRenderer getFontRenderer();
 
-    <T extends AbstractSelectionList.Entry<T>> void buildTextList(Consumer<T> textListViewConsumer, BiFunction<Component, String, T> newEntry);
+    <T extends AbstractList.AbstractListEntry<T>> void buildTextList(Consumer<T> textListViewConsumer, BiFunction<ITextComponent, String, T> newEntry);
 }

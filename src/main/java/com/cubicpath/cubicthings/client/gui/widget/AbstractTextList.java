@@ -6,24 +6,25 @@ package com.cubicpath.cubicthings.client.gui.widget;
 
 import com.cubicpath.cubicthings.client.gui.screen.ITextListHolder;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.AbstractSelectionList;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.widget.list.AbstractList;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.util.text.ITextComponent;
 
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public abstract class AbstractTextList<E extends AbstractTextList.AbstractTextEntry<E>> extends AbstractSelectionList<E>{
+public abstract class AbstractTextList<E extends AbstractTextList.AbstractTextEntry<E>> extends AbstractList<E>{
     protected final int left, listWidth, borderPaddingX, borderPaddingY, textColor;
     protected final Consumer<AbstractTextEntry<E>> onEntryClicked;
-    protected Font font;
+    protected final FontRenderer font;
 
-    public AbstractTextList(int listWidth, int listHeight, int x, int y, int borderPaddingX, int borderPaddingY, int itemHeight, int textColor, boolean renderDirtBackground, boolean renderDarkOutline, Font font, Consumer<AbstractTextEntry<E>> onEntryClicked) {
+    public AbstractTextList(int listWidth, int listHeight, int x, int y, int borderPaddingX, int borderPaddingY, int itemHeight, int textColor, boolean renderDirtBackground, boolean renderDarkOutline, FontRenderer font, Consumer<AbstractTextEntry<E>> onEntryClicked) {
         super(Minecraft.getInstance(), listWidth, 0, y, y + listHeight, itemHeight);
         super.setRenderBackground(renderDirtBackground);
         super.setRenderTopAndBottom(renderDarkOutline);
@@ -43,6 +44,11 @@ public abstract class AbstractTextList<E extends AbstractTextList.AbstractTextEn
     }
 
     @Override
+    public int addEntry(E p_230513_1_) {
+        return super.addEntry(p_230513_1_);
+    }
+
+    @Override
     public int getRowWidth() {
         return this.listWidth;
     }
@@ -56,15 +62,15 @@ public abstract class AbstractTextList<E extends AbstractTextList.AbstractTextEn
     }
 
     @Override
-    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
-        super.render(poseStack, mouseX, mouseY, partialTicks);
+    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+        super.render(matrixStack, mouseX, mouseY, partialTicks);
         super.setLeftPos(this.left);
     }
 
     @Override
-    public void renderList(PoseStack poseStack, int x, int y, int mouseX, int mouseY, float partialTicks){
-        Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder bufferbuilder = tesselator.getBuilder();
+    public void renderList(MatrixStack matrixStack, int x, int y, int mouseX, int mouseY, float partialTicks){
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferbuilder = tessellator.getBuilder();
 
         for(int i = 0; i < this.getItemCount(); ++i) {
             int rowTop = this.getRowTop(i);
@@ -80,38 +86,33 @@ public abstract class AbstractTextList<E extends AbstractTextList.AbstractTextEn
                     int left = this.x0 + (this.width / 2) - rowWidth / 2;
                     int right = left + this.font.width(textEntry.displayText) + 10;
                     RenderSystem.disableTexture();
-                    RenderSystem.setShader(GameRenderer::getPositionShader);
                     float f = this.isFocused() ? 1.0F : 0.5F;
-                    RenderSystem.setShaderColor(f, f, f, 1.0F);
-                    bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+                    RenderSystem.blendColor(f, f, f, 1.0F);
+                    bufferbuilder.begin(7, DefaultVertexFormats.POSITION);
                     bufferbuilder.vertex(left, top + rowHeight + 3, 0.0D).endVertex();
                     bufferbuilder.vertex(right, top + rowHeight + 3, 0.0D).endVertex();
                     bufferbuilder.vertex(right, top - 3, 0.0D).endVertex();
                     bufferbuilder.vertex(left, top - 3, 0.0D).endVertex();
-                    tesselator.end();
-                    RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
-                    bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+                    tessellator.end();
+                    RenderSystem.blendColor(0.0F, 0.0F, 0.0F, 1.0F);
+                    bufferbuilder.begin(7, DefaultVertexFormats.POSITION);
                     bufferbuilder.vertex(left + 1, top + rowHeight + 2, 0.0D).endVertex();
                     bufferbuilder.vertex(right - 1, top + rowHeight + 2, 0.0D).endVertex();
                     bufferbuilder.vertex(right - 1, top - 2, 0.0D).endVertex();
                     bufferbuilder.vertex(left + 1, top - 2, 0.0D).endVertex();
-                    tesselator.end();
+                    tessellator.end();
                     RenderSystem.enableTexture();
                 }
 
-                textEntry.render(poseStack, i, rowTop, rowLeft, rowWidth, rowHeight, mouseX, mouseY, Objects.equals(getHovered(), textEntry), partialTicks);
+                textEntry.render(matrixStack, i, rowTop, rowLeft, rowWidth, rowHeight, mouseX, mouseY, Objects.equals(this.getEntryAtPosition(mouseX, mouseY), textEntry), partialTicks);
             }
         }
     }
 
-    @Override
-    public void updateNarration(NarrationElementOutput narrationElementOutput) {
-    }
-
-    public static abstract class AbstractTextEntry<E extends AbstractTextEntry<E>> extends AbstractSelectionList.Entry<E> {
+    public static abstract class AbstractTextEntry<E extends AbstractTextEntry<E>> extends AbstractList.AbstractListEntry<E> {
         protected final int xPadding, yPadding, color;
         protected final Consumer<AbstractTextEntry<E>> onClicked;
-        protected final Component displayText;
+        protected final ITextComponent displayText;
         protected final ITextListHolder parentScreen;
 
         @SuppressWarnings("unchecked")
@@ -119,7 +120,7 @@ public abstract class AbstractTextList<E extends AbstractTextList.AbstractTextEn
             return (E) this;
         }
 
-        public AbstractTextEntry(Consumer<AbstractTextEntry<E>> onClicked, Component displayText, ITextListHolder parentScreen, int xPadding, int yPadding, int color) {
+        public AbstractTextEntry(Consumer<AbstractTextEntry<E>> onClicked, ITextComponent displayText, ITextListHolder parentScreen, int xPadding, int yPadding, int color) {
             this.onClicked = onClicked;
             this.xPadding = xPadding;
             this.yPadding = yPadding;
@@ -128,7 +129,7 @@ public abstract class AbstractTextList<E extends AbstractTextList.AbstractTextEn
             this.parentScreen = parentScreen;
         }
 
-        public Component getDisplayText() {
+        public ITextComponent getDisplayText() {
             return this.displayText;
         }
 
@@ -142,8 +143,8 @@ public abstract class AbstractTextList<E extends AbstractTextList.AbstractTextEn
 
         @Override
         @SuppressWarnings("deprecation")
-        public void render(PoseStack matrixStack, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean isMouseOver, float partialTicks) {
-            Font font = this.parentScreen.getFontRenderer();
+        public void render(MatrixStack matrixStack, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean isMouseOver, float partialTicks) {
+            FontRenderer font = this.parentScreen.getFontRenderer();
             font.draw(matrixStack, font.width(this.displayText) > this.list.getRowWidth() ? font.split(this.displayText, this.list.getRowWidth()).get(0) : this.displayText.getVisualOrderText(), left + this.xPadding , top + this.yPadding, this.color);
 
             if (super.isMouseOver(mouseX, mouseY)) {

@@ -11,16 +11,16 @@ import com.cubicpath.cubicthings.core.config.ConfigMenuConfig;
 import com.cubicpath.util.ComponentUtils;
 
 import com.electronwill.nightconfig.core.AbstractConfig;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.AbstractSelectionList;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.network.chat.*;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.audio.SimpleSound;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.widget.list.AbstractList;
+import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.util.text.*;
+import net.minecraft.util.SoundEvents;
+import net.minecraft.util.SoundCategory;
 import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.glfw.GLFW;
@@ -32,13 +32,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class ConfigScreen extends Screen implements ITextListHolder {
     protected static boolean hideComments, hideSeparators = false;
 
     protected boolean clickedKeyField = false, clickedValueField = false, invalidKey = false, invalidValue = false, foundKey = false;
     protected Button prevConfigButton, nextConfigButton, cancelButton, toggleCommentsButton, toggleSeparatorsButton, submitChangeButton;
-    protected EditBox keyInputField, valueInputField;
+    protected TextFieldWidget keyInputField, valueInputField;
     protected ConfigListWidget configList;
     protected BaseConfig current;
     protected final ConfigMenuConfig menuConfig;
@@ -46,16 +47,14 @@ public class ConfigScreen extends Screen implements ITextListHolder {
     protected final Screen prevScreen;
 
     public ConfigScreen(Screen prevScreen, String configName, ConfigMenuConfig menuConfig, BaseConfig... modConfig) {
-        super(new TranslatableComponent("modConfig.title", configName));
+        super(new TranslationTextComponent("modConfig.title", configName));
         this.menuConfig = menuConfig;
         this.current = modConfig[0];
-        this.configs = List.of(modConfig);
+        this.configs = Arrays.asList(modConfig);
         this.prevScreen = prevScreen;
     }
 
     protected void updateWidgets(){
-        reloadMenuConfigs();
-
         if ((!this.clickedKeyField || this.invalidKey) && this.keyInputField.isFocused()) {
             this.keyInputField.setValue("");
             this.keyInputField.setTextColor(0xA0A0A0);
@@ -75,8 +74,8 @@ public class ConfigScreen extends Screen implements ITextListHolder {
         else if (!this.invalidKey)
             this.keyInputField.setTextColor(0xA0A0A0);
 
-        this.toggleCommentsButton.setMessage(new TranslatableComponent(hideComments ? "modConfig.comments.hidden" : "modConfig.comments.shown"));
-        this.toggleSeparatorsButton.setMessage(new TranslatableComponent(hideSeparators ? "modConfig.separators.hidden" : "modConfig.separators.shown"));
+        this.toggleCommentsButton.setMessage(new TranslationTextComponent(hideComments ? "modConfig.comments.hidden" : "modConfig.comments.shown"));
+        this.toggleSeparatorsButton.setMessage(new TranslationTextComponent(hideSeparators ? "modConfig.separators.hidden" : "modConfig.separators.shown"));
 
         this.configList.refreshList();
     }
@@ -86,24 +85,24 @@ public class ConfigScreen extends Screen implements ITextListHolder {
     }
 
     @Override
-    public Font getFontRenderer() {
+    public FontRenderer getFontRenderer() {
         return this.font;
     }
 
-    public <T extends AbstractSelectionList.Entry<T>> void buildTextList(Consumer<T> textListViewConsumer, BiFunction<Component, String, T> newEntry) {
+    public <T extends AbstractList.AbstractListEntry<T>> void buildTextList(Consumer<T> textListViewConsumer, BiFunction<ITextComponent, String, T> newEntry) {
         addTextEntries(this.current.getSpec().valueMap(), textListViewConsumer, newEntry);
     }
 
-    public <T extends AbstractSelectionList.Entry<T>> void addTextEntries(Map<String, Object> valueMap, Consumer<T> textListViewConsumer, BiFunction<Component, String, T> newEntry){
+    public <T extends AbstractList.AbstractListEntry<T>> void addTextEntries(Map<String, Object> valueMap, Consumer<T> textListViewConsumer, BiFunction<ITextComponent, String, T> newEntry){
         addTextEntries(valueMap, textListViewConsumer, newEntry, null, 0);
-        textListViewConsumer.accept(newEntry.apply(Component.nullToEmpty(null), null));
+        textListViewConsumer.accept(newEntry.apply(ITextComponent.nullToEmpty(null), null));
     }
 
-    protected <T extends AbstractSelectionList.Entry<T>> void addTextEntries(Map<String, Object> valueMap, Consumer<T> textListViewConsumer, BiFunction<Component, String, T> newEntry, @Nullable String prevConfigName, final int depth){
+    protected <T extends AbstractList.AbstractListEntry<T>> void addTextEntries(Map<String, Object> valueMap, Consumer<T> textListViewConsumer, BiFunction<ITextComponent, String, T> newEntry, @Nullable String prevConfigName, final int depth){
         valueMap.keySet().forEach((key) -> {
             String pathName = prevConfigName != null ? prevConfigName + "." + key : key;
             String comment = this.current.getComment(pathName);
-            if (valueMap.get(key) instanceof AbstractConfig abstractConfig) {
+            if (valueMap.get(key) instanceof AbstractConfig) {
                 if (!hideComments && comment != null)
                     for (String string : comment.split("\\n\\r | [\\n\\r]"))
                         textListViewConsumer.accept(newEntry.apply(ComponentUtils.stringToText(StringUtils.repeat(' ', depth * 4 - 1) + "#" + string.replace("\t", "    "), this.menuConfig.colors[4]), null));
@@ -115,14 +114,14 @@ public class ConfigScreen extends Screen implements ITextListHolder {
                                 (ComponentUtils.stringToText("]", 0xAAAAAA)),
                         null));
 
-                addTextEntries(abstractConfig.valueMap(), textListViewConsumer, newEntry, pathName, depth + 1);
+                addTextEntries(((AbstractConfig)valueMap.get(key)).valueMap(), textListViewConsumer, newEntry, pathName, depth + 1);
             } else {
                 if (!hideComments && comment != null)
                     for (String string : comment.split("\\n\\r | [\\n\\r]"))
                         textListViewConsumer.accept(newEntry.apply(ComponentUtils.stringToText(StringUtils.repeat(' ', depth * 4 - 1) + "#" + string.replace("\t", "    "), this.menuConfig.colors[4]), null));
 
                 //Format text based on type
-                MutableComponent outputBase = ComponentUtils.stringToText(StringUtils.repeat(' ', depth * 4) + (this.menuConfig.showFullKeyNames ? pathName : key), this.menuConfig.colors[2]).append(ComponentUtils.stringToText(" = ", 0xA0A0A0));
+                IFormattableTextComponent outputBase = ComponentUtils.stringToText(StringUtils.repeat(' ', depth * 4) + (this.menuConfig.showFullKeyNames ? pathName : key), this.menuConfig.colors[2]).append(ComponentUtils.stringToText(" = ", 0xA0A0A0));
                 textListViewConsumer.accept(newEntry.apply(outputBase.append(getValueComponent(pathName.split("\\."))), pathName));
 
                 if (!hideSeparators)
@@ -147,7 +146,8 @@ public class ConfigScreen extends Screen implements ITextListHolder {
             try {
                 String valueInput = this.valueInputField.getValue().trim();
                 Object valueSpec = nestedConfig == null ? valueMap.get(lastSplit) : nestedConfig.get(lastSplit);
-                var configValue = this.current.getConfigValue(StringUtils.join(splitInput, '.'));
+                ForgeConfigSpec.ConfigValue<?> configValue = this.current.getConfigValue(StringUtils.join(splitInput, '.'));
+                AbstractConfig abstractConfig = valueMap.get(splitInput[depth]) instanceof AbstractConfig ? ((AbstractConfig)valueMap.get(splitInput[depth])) : null;
                 boolean isTruthy = StringUtils.equalsAnyIgnoreCase(valueInput, "true", "yes", "y", "t") || (StringUtils.isNumeric(valueInput) && Integer.parseInt(valueInput) == 1);
                 boolean isFalsy = StringUtils.equalsAnyIgnoreCase(valueInput, "false", "no", "n", "f") || (StringUtils.isNumeric(valueInput) && Integer.parseInt(valueInput) == 0);
                 int radix = StringUtils.startsWithAny(valueInput.toLowerCase(), "0x", "#") ? 16
@@ -157,7 +157,7 @@ public class ConfigScreen extends Screen implements ITextListHolder {
                 if (valueSpec instanceof ForgeConfigSpec.ValueSpec && configValue != null){
                     Class<?> valueClazz = ((ForgeConfigSpec.ValueSpec) valueSpec).getClazz();
 
-                    if (valueClazz == List.class)           this.current.setValue(StringUtils.join(splitInput, '.'), Arrays.stream(StringUtils.strip(valueInput, "[]").split(", ")).toList());
+                    if (valueClazz == List.class)           this.current.setValue(StringUtils.join(splitInput, '.'), Arrays.stream(StringUtils.strip(valueInput, "[]").split(", ")).collect(Collectors.toList()));
                     else if (valueClazz == String.class)    this.current.setValue(StringUtils.join(splitInput, '.'), valueInput);
                     else if (valueClazz == Short.class)     this.current.setValue(StringUtils.join(splitInput, '.'), Short.valueOf(StringUtils.stripStart(valueInput.replaceFirst("(?i)(0x|#|0o|o|0b|b)", "0"), "0"), radix));
                     else if (valueClazz == Integer.class)   this.current.setValue(StringUtils.join(splitInput, '.'), Integer.valueOf(StringUtils.stripStart(valueInput.replaceFirst("(?i)(0x|#|0o|o|0b|b)", "0"), "0"), radix));
@@ -178,7 +178,7 @@ public class ConfigScreen extends Screen implements ITextListHolder {
                     this.foundKey = true;
                     this.invalidKey = false;
                     this.valueInputField.setTextColor(this.menuConfig.colors[0]);
-                } else if (valueMap.get(splitInput[depth]) instanceof AbstractConfig abstractConfig) {
+                } else if (abstractConfig != null) {
                     // Call same function if next value in path translates to an AbstractConfig
                     doConfigChange(abstractConfig.valueMap(), abstractConfig, depth + 1);
                     if (!this.foundKey) {
@@ -203,36 +203,33 @@ public class ConfigScreen extends Screen implements ITextListHolder {
         }
     }
 
-    protected void reloadMenuConfigs(){
-        
-    }
-
     @Nonnull
-    private MutableComponent getValueComponent(@Nullable String[] path){
+    private IFormattableTextComponent getValueComponent(@Nullable String[] path){
         return getValueComponent(this.current.getValue(StringUtils.join(path, '.'), Object.class));
     }
 
     @Nonnull
-    private MutableComponent getValueComponent(@Nullable Object o){
+    private IFormattableTextComponent getValueComponent(@Nullable Object o){
         boolean isIntegralNumber = o instanceof Short || o instanceof Integer || o instanceof Long;
-        if (o instanceof String s)                                                      return ComponentUtils.stringToText('"' + s.replace("\\", "\\\\").replace("\"", "\\\"") + '"', this.menuConfig.colors[6]);
+        if (o instanceof String)                                                        return ComponentUtils.stringToText('"' + ((String)o).replace("\\", "\\\\").replace("\"", "\\\"") + '"', this.menuConfig.colors[6]);
         if (o instanceof Boolean)                                                       return ComponentUtils.stringToText(o.toString(), this.menuConfig.colors[7]);
         if (o instanceof Byte && this.menuConfig.showBytesAsBinary)                     return ComponentUtils.stringToText("0b" + StringUtils.repeat('0', 8 - Integer.toBinaryString((byte) o & 0xFF).length()) + Integer.toBinaryString((byte) o & 0xFF), this.menuConfig.colors[8]);
         if (o instanceof Byte && this.menuConfig.showIntsAsHex)                         return ComponentUtils.stringToText("0x" + Integer.toHexString((Byte)o & 0xFF).toUpperCase(), this.menuConfig.colors[8]);
-        if (o instanceof Byte b)                                                        return ComponentUtils.stringToText(((Integer)(b & 0xFF)).toString(), this.menuConfig.colors[8]);
+        if (o instanceof Byte)                                                          return ComponentUtils.stringToText(((Integer)(((Byte)o) & 0xFF)).toString(), this.menuConfig.colors[8]);
         if (isIntegralNumber && this.menuConfig.showIntsAsHex)                          return ComponentUtils.stringToText("0x" + Long.toHexString(((Number) o).longValue()).toUpperCase(), this.menuConfig.colors[9]);
         if (isIntegralNumber)                                                           return ComponentUtils.stringToText(o.toString(), this.menuConfig.colors[9]);
         if (o instanceof Float || o instanceof Double)                                  return ComponentUtils.stringToText(o.toString(), this.menuConfig.colors[10]);
-        if (o instanceof List<?> l) {
-            var mutableComponent = ComponentUtils.stringToText("[", 0xAAAAAA);
+        if (o instanceof List<?>) {
+            List<?> l = (List<?>) o; 
+            IFormattableTextComponent a = ComponentUtils.stringToText("[", 0xAAAAAA);
             for (int i = 0; i < l.size() ; i++){
-                mutableComponent.append(getValueComponent(l.get(i)));
+                a.append(getValueComponent(l.get(i)));
                 if (i != l.size() - 1)
-                    mutableComponent.append(ComponentUtils.stringToText(", ", 0xAAAAAA));
-            }                                                                                           return mutableComponent.append(ComponentUtils.stringToText("]", 0xAAAAAA));
+                    a.append(ComponentUtils.stringToText(", ", 0xAAAAAA));
+            }                                                                           return a.append(ComponentUtils.stringToText("]", 0xAAAAAA));
         }
-        if (o != null)                                                                                  return ComponentUtils.stringToText(o.toString(), this.menuConfig.colors[2]);
-        return TextComponent.EMPTY.plainCopy();
+        if (o != null)                                                                  return ComponentUtils.stringToText(o.toString(), this.menuConfig.colors[2]);
+        return ComponentUtils.getEmptyMutable();
     }
 
     @Override
@@ -240,19 +237,19 @@ public class ConfigScreen extends Screen implements ITextListHolder {
         super.init();
         getMinecraft().keyboardHandler.setSendRepeatsToGui(true);
 
-        this.keyInputField = new EditBox(this.font, this.width / 2 - 150, 25, 130, 10, Component.nullToEmpty("Key"));
+        this.keyInputField = new TextFieldWidget(this.font, this.width / 2 - 150, 25, 130, 10, ITextComponent.nullToEmpty("Key"));
         this.keyInputField.setMaxLength(256);
         this.keyInputField.setTextColor(0x888888);
         this.keyInputField.setValue("Key");
-        addRenderableWidget(this.keyInputField);
+        addButton(this.keyInputField);
 
-        this.valueInputField = new EditBox(this.font, this.width / 2 - 5, 25, 80, 10, Component.nullToEmpty("Value"));
+        this.valueInputField = new TextFieldWidget(this.font, this.width / 2 - 5, 25, 80, 10, ITextComponent.nullToEmpty("Value"));
         this.valueInputField.setMaxLength(256);
         this.valueInputField.setTextColor(0x888888);
         this.valueInputField.setValue("Value");
-        addRenderableWidget(this.valueInputField);
+        addButton(this.valueInputField);
 
-        this.prevConfigButton = addRenderableWidget(new Button(this.width / 2 + 135, 20, 10, 20, Component.nullToEmpty("<"), button -> {
+        this.prevConfigButton = addButton(new Button(this.width / 2 + 135, 20, 10, 20, ITextComponent.nullToEmpty("<"), button -> {
             try {
                 this.current = configs.get(configs.indexOf(current) - 1);
             } catch (IndexOutOfBoundsException e){
@@ -261,7 +258,7 @@ public class ConfigScreen extends Screen implements ITextListHolder {
         }));
         this.prevConfigButton.active = this.configs.size() > 1;
 
-        this.nextConfigButton = addRenderableWidget(new Button(this.width / 2 + 145, 20, 10, 20, Component.nullToEmpty(">"), button -> {
+        this.nextConfigButton = addButton(new Button(this.width / 2 + 145, 20, 10, 20, ITextComponent.nullToEmpty(">"), button -> {
             try {
                 this.current = configs.get(configs.indexOf(current) + 1);
             } catch (IndexOutOfBoundsException e){
@@ -270,29 +267,29 @@ public class ConfigScreen extends Screen implements ITextListHolder {
         }));
         this.nextConfigButton.active = this.configs.size() > 1;
 
-        this.toggleCommentsButton = addRenderableWidget(new Button(this.width / 2 - 150, this.height - 30, 110, 20, new TranslatableComponent(hideComments ? "modConfig.comments.hidden" : "modConfig.comments.shown"), (button) -> {
+        this.toggleCommentsButton = addButton(new Button(this.width / 2 - 150, this.height - 30, 110, 20, new TranslationTextComponent(hideComments ? "modConfig.comments.hidden" : "modConfig.comments.shown"), (button) -> {
             // Toggles comment hiding
             hideComments = !hideComments;
         }));
 
-        this.toggleSeparatorsButton = addRenderableWidget(new Button(this.width / 2 - 40, this.height - 30, 110, 20, new TranslatableComponent(hideComments ? "modConfig.separators.hidden" : "modConfig.separators.shown"), (button) -> {
+        this.toggleSeparatorsButton = addButton(new Button(this.width / 2 - 40, this.height - 30, 110, 20, new TranslationTextComponent(hideComments ? "modConfig.separators.hidden" : "modConfig.separators.shown"), (button) -> {
             // Toggles separator hiding
             hideSeparators = !hideSeparators;
         }));
 
-        this.cancelButton = addRenderableWidget(new Button(this.width / 2 + 86, this.height - 30, 70, 20, new TranslatableComponent("gui.cancel"), (button) -> {
+        this.cancelButton = addButton(new Button(this.width / 2 + 86, this.height - 30, 70, 20, new TranslationTextComponent("gui.cancel"), (button) -> {
             // Send player back to last screen.
             getMinecraft().setScreen(this.prevScreen);
         }));
 
-        this.submitChangeButton = addRenderableWidget(new Button(this.width / 2 + 80, 20, 50, 20,  new TranslatableComponent("gui.submit"), (button) -> {
+        this.submitChangeButton = addButton(new Button(this.width / 2 + 80, 20, 50, 20,  new TranslationTextComponent("gui.submit"), (button) -> {
             // Change a config value with a given input.
             doConfigChange();
         }));
 
         this.configList = new ConfigListWidget(this, 300,this.height - 75,this.width / 2 - 150,45,4, 4, this.font.lineHeight + 2, 0xC0C0C0, true, true, this.font, (configEntry) -> {
-            var oldValue = this.keyInputField.getValue();
-            var valueString = getValueComponent(configEntry.get().configValue.getPath().toArray(new String[0])).getString().replace("\\\"","\"").replace("\\\\", "\\");
+            String oldValue = this.keyInputField.getValue();
+            String valueString = getValueComponent(configEntry.get().configValue.getPath().toArray(new String[0])).getString().replace("\\\"","\"").replace("\\\\", "\\");
             if (configEntry.get().configValue.get() instanceof String) valueString = valueString.substring(1, valueString.length() - 1);
             if (configEntry.get().configValue.get() instanceof List<?>) {
                 StringBuilder s = new StringBuilder("[");
@@ -315,10 +312,9 @@ public class ConfigScreen extends Screen implements ITextListHolder {
             this.keyInputField.moveCursorToStart();
 
             if (!this.keyInputField.getValue().equals(oldValue))
-                getMinecraft().getSoundManager().play(new SimpleSoundInstance(SoundEvents.UI_BUTTON_CLICK, SoundSource.MASTER, 0.25F, 1.0F, 0, 0, 0));
+                getMinecraft().getSoundManager().play(new SimpleSound(SoundEvents.UI_BUTTON_CLICK, SoundCategory.MASTER, 0.25F, 1.0F, 0, 0, 0));
         });
 
-        reloadMenuConfigs();
     }
 
     @Override
@@ -331,8 +327,14 @@ public class ConfigScreen extends Screen implements ITextListHolder {
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (this.valueInputField.isFocused() && this.valueInputField.isVisible()){
             switch (keyCode) {
-                case GLFW.GLFW_KEY_ENTER -> this.submitChangeButton.onPress();
-                case GLFW.GLFW_KEY_ESCAPE -> this.valueInputField.setFocus(false);
+                case GLFW.GLFW_KEY_ENTER: {
+                    this.submitChangeButton.onPress();
+                    break;
+                }
+                case GLFW.GLFW_KEY_ESCAPE: {
+                    this.valueInputField.setFocus(false);
+                    break;
+                }
             }
 
             // If key printable, default value color.
@@ -367,22 +369,22 @@ public class ConfigScreen extends Screen implements ITextListHolder {
     }
 
     @Override
-    public void renderBackground(PoseStack PoseStack) {
-        super.renderBackground(PoseStack);
+    public void renderBackground(MatrixStack MatrixStack) {
+        super.renderBackground(MatrixStack);
     }
 
-    public void renderForeground(PoseStack PoseStack){
-        this.font.draw(PoseStack, Component.nullToEmpty("="), this.width / 2.0F - 15, 26, 0xAAAAAA);
-        this.font.draw(PoseStack, ((MutableComponent)this.title).setStyle(this.title.getStyle().setUnderlined(true)), 5, 5, 0xA0A0A0);
+    public void renderForeground(MatrixStack MatrixStack){
+        this.font.draw(MatrixStack, ITextComponent.nullToEmpty("="), this.width / 2.0F - 15, 26, 0xAAAAAA);
+        this.font.draw(MatrixStack, ((IFormattableTextComponent)this.title).setStyle(this.title.getStyle().setUnderlined(true)), 5, 5, 0xA0A0A0);
     }
 
     @Override
-    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(poseStack);
+    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+        this.renderBackground(matrixStack);
         this.updateWidgets();
-        this.configList.render(poseStack, mouseX, mouseY, partialTicks);
-        super.render(poseStack, mouseX, mouseY, partialTicks);
-        this.renderForeground(poseStack);
+        this.configList.render(matrixStack, mouseX, mouseY, partialTicks);
+        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        this.renderForeground(matrixStack);
     }
 
     @Override

@@ -8,7 +8,7 @@ public class ConfigMenuConfig extends BaseConfig {
     public Boolean showFullKeyNames, showBytesAsBinary, showIntsAsHex;
     public String separatorChars;
     public Integer separatorLength, separatorHeight;
-    public Integer[] colors = new Integer[11];
+    public final Integer[] colors = new Integer[11];
     
     public ConfigMenuConfig(String configName) {
         super(configName);
@@ -39,9 +39,9 @@ public class ConfigMenuConfig extends BaseConfig {
     }
     
     public void reloadFields(){
-        var menuPath = "configMenu.";
-        var separatorPath = menuPath + "separator.";
-        var colorPath = menuPath + "color.";
+        String menuPath = "configMenu.";
+        String separatorPath = menuPath + "separator.";
+        String colorPath = menuPath + "color.";
         this.showFullKeyNames   =    getValue(menuPath  + "fullKeyNames",       Boolean.class);
         this.showBytesAsBinary  =    getValue(menuPath  + "bytesAsBinary",      Boolean.class);
         this.showIntsAsHex      =    getValue(menuPath  + "integersAsHex",      Boolean.class);
