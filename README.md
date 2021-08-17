@@ -1,13 +1,15 @@
 # CubicThings
 
 [Comment]: # (Badges)
-[![MIT License](https://img.shields.io/github/license/Cubicpath/CubicThings?style=flat-square")](LICENSE)
+[![MIT License](https://img.shields.io/github/license/Cubicpath/CubicThings?style=flat-square)](LICENSE)
 [![Uses Forge Loader](https://img.shields.io/badge/environment-client_and_server-1976d2?style=flat-square)](https://mcforge.readthedocs.io/en/1.16.x/concepts/sides#sides-in-minecraft)
 [![Uses Forge Loader](https://img.shields.io/badge/modloader-forge-1976d2?style=flat-square)](https://files.minecraftforge.net)
 
 [Comment]: # (Description)
-Random assortment of useful things.  
+Random assortment of useful things.
+
 ### Features
+
 -----------------------------------
   - Custom Commands
     - Burn Command
